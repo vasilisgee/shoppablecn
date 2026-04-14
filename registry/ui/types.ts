@@ -1,3 +1,5 @@
+import type * as React from "react"
+
 export type Currency = "EUR" | "USD" | "GBP" | "SEK"
 
 export type Price = {
@@ -93,5 +95,57 @@ export type ProductCardProps = {
   }) => void
   onWishlistToggle?: (productId: string) => void
   onQuickView?: (productId: string) => void
+  className?: string
+}
+
+export type HotspotPinVariant = "plus" | "dot"
+
+export type HotspotImageProps = {
+  /** Image source. */
+  src: string
+  /** Image alt text. Required for accessibility. */
+  alt: string
+  /** Natural width in pixels. Required — matches next/image API. */
+  width: number
+  /** Natural height in pixels. Required — matches next/image API. */
+  height: number
+  /** HotspotPin children. */
+  children: React.ReactNode
+  /** Optional className for the outer scrollable wrapper. */
+  className?: string
+}
+
+export type HotspotPinProps = {
+  /** Horizontal position as a percentage of image width (0–100). */
+  x: number
+  /** Vertical position as a percentage of image height (0–100). */
+  y: number
+  /** Visual style of the pin. Default: "plus". */
+  variant?: HotspotPinVariant
+  /** Accessible label for the pin button. Defaults to "Hotspot at X%, Y%" if not provided. */
+  label?: string
+  /** Popover content rendered when the pin is activated. */
+  children: React.ReactNode
+  /** Optional className for the pin button. */
+  className?: string
+}
+
+export type HotspotTooltipProps = {
+  /** Title displayed at top of the tooltip. */
+  title: string
+  /** Description text below the title. */
+  description: string
+  /** Optional className for the tooltip container. */
+  className?: string
+}
+
+export type HotspotLinkProps = {
+  /** Link label. */
+  label: string
+  /** Link href. */
+  href: string
+  /** Optional target (e.g., "_blank"). */
+  target?: React.HTMLAttributeAnchorTarget
+  /** Optional className for the link container. */
   className?: string
 }
