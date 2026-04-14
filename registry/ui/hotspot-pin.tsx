@@ -7,15 +7,24 @@ import { cn } from "@/lib/utils"
 
 import type { HotspotPinProps } from "./types"
 
+const pinBaseClasses =
+  "absolute inline-flex items-center justify-center rounded-full shadow-sm transition-[background-color,box-shadow,filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none"
+
+const pinVariantClasses = {
+  plus: "size-8 border border-border bg-background text-foreground hover:bg-accent",
+  dot: "size-4 border border-background/80 bg-primary text-primary-foreground",
+} satisfies Record<NonNullable<HotspotPinProps["variant"]>, string>
+
 export function HotspotPin(props: HotspotPinProps) {
-  const { x, y, label, children, className } = props
+  const { x, y, variant = "plus", label, children, className } = props
 
   return (
     <Popover>
       <PopoverTrigger
         aria-label={label ?? `Hotspot at ${x}%, ${y}%`}
         className={cn(
-          "absolute inline-flex size-8 items-center justify-center rounded-full border border-border bg-background text-foreground shadow-sm transition-[background-color,box-shadow] hover:bg-accent focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none",
+          pinBaseClasses,
+          pinVariantClasses[variant],
           className
         )}
         style={{
@@ -26,7 +35,7 @@ export function HotspotPin(props: HotspotPinProps) {
         }}
         type="button"
       >
-        <Plus aria-hidden="true" className="size-4" />
+        {variant === "plus" ? <Plus aria-hidden="true" className="size-4" /> : null}
       </PopoverTrigger>
       <PopoverContent
         align="center"
