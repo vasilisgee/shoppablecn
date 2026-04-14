@@ -23,6 +23,7 @@ import type {
   ProductCardLayout,
   ProductCardProps,
 } from "./types"
+import { QuickOptions } from "./quick-options"
 import { formatPrice } from "./utils"
 
 const badgeVariants: Record<
@@ -80,7 +81,10 @@ export type ProductCardActionsProps = {
   layout: ProductCardLayout
   product: Product
   showQuickView: boolean
-  onAddToCart?: ProductCardProps["onAddToCart"]
+  onPrimaryAction: () => void
+  primaryActionLabel: string
+  primaryActionHasPopup?: "dialog"
+  primaryActionExpanded?: boolean
   onQuickView?: ProductCardProps["onQuickView"]
 }
 
@@ -385,7 +389,10 @@ export function ProductCardActions({
   layout,
   product,
   showQuickView,
-  onAddToCart,
+  onPrimaryAction,
+  primaryActionLabel,
+  primaryActionHasPopup,
+  primaryActionExpanded,
   onQuickView,
 }: ProductCardActionsProps) {
   const actionButtons = showQuickView ? (
@@ -402,12 +409,14 @@ export function ProductCardActions({
 
   const addToCartButton = (
     <Button
+      aria-expanded={primaryActionHasPopup ? primaryActionExpanded : undefined}
+      aria-haspopup={primaryActionHasPopup}
       className={layout === "vertical" ? undefined : "w-full sm:w-auto"}
-      onClick={() => onAddToCart?.({ productId: product.id })}
+      onClick={onPrimaryAction}
       type="button"
     >
       <ShoppingCart aria-hidden="true" />
-      Add to cart
+      {primaryActionLabel}
     </Button>
   )
 
@@ -431,6 +440,7 @@ export function ProductCardActions({
 function ProductCardBase({
   product,
   layout = "vertical",
+  variants = "none",
   showWishlist = false,
   showRating = true,
   showQuickView = false,
@@ -439,6 +449,21 @@ function ProductCardBase({
   onQuickView,
   className,
 }: ProductCardProps) {
+  const [overlayOpen, setOverlayOpen] = React.useState(false)
+  const hasOverlayVariants =
+    variants === "overlay" &&
+    Array.isArray(product.variants) &&
+    product.variants.length > 0
+
+  const handlePrimaryAction = React.useCallback(() => {
+    if (hasOverlayVariants) {
+      setOverlayOpen(true)
+      return
+    }
+
+    onAddToCart?.({ productId: product.id })
+  }, [hasOverlayVariants, onAddToCart, product.id])
+
   return (
     <Card
       className={cn(
@@ -484,8 +509,11 @@ function ProductCardBase({
             <ProductCardPrice price={product.price} />
             <ProductCardActions
               layout={layout}
-              onAddToCart={onAddToCart}
+              onPrimaryAction={handlePrimaryAction}
               onQuickView={onQuickView}
+              primaryActionExpanded={hasOverlayVariants ? overlayOpen : undefined}
+              primaryActionHasPopup={hasOverlayVariants ? "dialog" : undefined}
+              primaryActionLabel={hasOverlayVariants ? "Quick Buy" : "Add to cart"}
               product={product}
               showQuickView={showQuickView}
             />
@@ -495,8 +523,11 @@ function ProductCardBase({
             <ProductCardPrice price={product.price} />
             <ProductCardActions
               layout={layout}
-              onAddToCart={onAddToCart}
+              onPrimaryAction={handlePrimaryAction}
               onQuickView={onQuickView}
+              primaryActionExpanded={hasOverlayVariants ? overlayOpen : undefined}
+              primaryActionHasPopup={hasOverlayVariants ? "dialog" : undefined}
+              primaryActionLabel={hasOverlayVariants ? "Quick Buy" : "Add to cart"}
               product={product}
               showQuickView={showQuickView}
             />
@@ -505,6 +536,20 @@ function ProductCardBase({
       </div>
 
       {product.badge ? <ProductCardBadge badge={product.badge} /> : null}
+      {hasOverlayVariants ? (
+        <QuickOptions
+          onAddToCart={(selectedVariants) => {
+            onAddToCart?.({
+              productId: product.id,
+              selectedVariants,
+            })
+            setOverlayOpen(false)
+          }}
+          onOpenChange={setOverlayOpen}
+          open={overlayOpen}
+          variants={product.variants ?? []}
+        />
+      ) : null}
     </Card>
   )
 }
