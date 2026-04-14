@@ -461,13 +461,82 @@ export function ProductCardPreviewContent() {
       <PreviewSeparator />
 
       <PreviewExample
-        description={'layout="vertical" variants="none" product=mockProductWithImages'}
-        title={'Image slideshow / vertical / variants=none / images=3'}
+        description={
+          'layout="vertical" variants="none" product=mockProductWithImages slideshowControls="both"'
+        }
+        title={
+          'Image slideshow / vertical / variants=none / images=3 / slideshowControls=both'
+        }
       >
         <div className="max-w-sm">
           <ProductCard
             layout="vertical"
             product={mockProductWithImages}
+            slideshowControls="both"
+            variants="none"
+          />
+        </div>
+      </PreviewExample>
+
+      <PreviewSeparator />
+
+      <PreviewExample
+        description={
+          'layout="vertical" variants="none" product=mockProductWithImages slideshowControls="arrows"'
+        }
+        title={
+          'Image slideshow / vertical / variants=none / images=3 / slideshowControls=arrows'
+        }
+      >
+        <div className="max-w-sm">
+          <ProductCard
+            layout="vertical"
+            product={mockProductWithImages}
+            slideshowControls="arrows"
+            variants="none"
+          />
+        </div>
+      </PreviewExample>
+
+      <PreviewSeparator />
+
+      <PreviewExample
+        description={
+          'layout="vertical" variants="none" product=mockProductWithImages slideshowControls="dots"'
+        }
+        title={
+          'Image slideshow / vertical / variants=none / images=3 / slideshowControls=dots'
+        }
+      >
+        <div className="max-w-sm">
+          <ProductCard
+            layout="vertical"
+            product={mockProductWithImages}
+            slideshowControls="dots"
+            variants="none"
+          />
+        </div>
+      </PreviewExample>
+
+      <PreviewSeparator />
+
+      <PreviewExample
+        description={
+          'layout="vertical" variants="none" product=mockProductWithImages slideshowControls="none"'
+        }
+        title={
+          'Image slideshow / vertical / variants=none / images=3 / slideshowControls=none'
+        }
+      >
+        <div className="max-w-sm space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Keyboard still works here: tab into the image area and press the left
+            or right arrow keys.
+          </p>
+          <ProductCard
+            layout="vertical"
+            product={mockProductWithImages}
+            slideshowControls="none"
             variants="none"
           />
         </div>

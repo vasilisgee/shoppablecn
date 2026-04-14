@@ -82,6 +82,8 @@ export type ProductCardProps = {
   product: Product
   layout?: ProductCardLayout
   variants?: ProductCardVariantsMode
+  /** Which slideshow navigation controls to render when product has multiple images. Default: "both". */
+  slideshowControls?: "arrows" | "dots" | "both" | "none"
   showWishlist?: boolean
   showRating?: boolean
   showQuickView?: boolean

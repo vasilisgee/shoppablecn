@@ -53,6 +53,13 @@ const contentLayoutClasses: Record<ProductCardLayout, string> = {
   "horizontal-detailed": "p-5 lg:p-6",
 }
 
+type ProductCardSlideshowControls = NonNullable<
+  ProductCardProps["slideshowControls"]
+>
+
+const ProductCardSlideshowControlsContext =
+  React.createContext<ProductCardSlideshowControls>("both")
+
 function getImageSizes(layout: ProductCardLayout) {
   return layout === "vertical"
     ? "(min-width: 1024px) 20rem, (min-width: 768px) 33vw, 100vw"
@@ -130,10 +137,17 @@ export function ProductCardImage({
   product,
   layout,
 }: ProductCardImageProps) {
+  const slideshowControls = React.useContext(
+    ProductCardSlideshowControlsContext
+  )
   const [currentIndex, setCurrentIndex] = React.useState(0)
   const [imageErrors, setImageErrors] = React.useState<number[]>([])
   const [loadedImageIndexes, setLoadedImageIndexes] = React.useState([0])
   const hasMultipleImages = product.images.length > 1
+  const showArrowControls =
+    slideshowControls === "arrows" || slideshowControls === "both"
+  const showDotControls =
+    slideshowControls === "dots" || slideshowControls === "both"
   const containerClasses = cn(
     "relative overflow-hidden bg-muted",
     imageLayoutClasses[layout]
@@ -284,56 +298,69 @@ export function ProductCardImage({
     <div
       aria-label={`${product.title} images`}
       aria-roledescription="carousel"
-      className={containerClasses}
+      className={cn(
+        containerClasses,
+        !product.href &&
+          "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      )}
       onKeyDown={handleCarouselKeyDown}
       role="region"
+      tabIndex={!product.href ? 0 : undefined}
     >
       {mediaContent}
 
-      <Button
-        aria-label="Previous image"
-        className="absolute top-1/2 left-3 z-10 -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90"
-        disabled={currentIndex === 0}
-        onClick={() => goToImage(Math.max(0, currentIndex - 1))}
-        size="icon-sm"
-        type="button"
-        variant="outline"
-      >
-        <ChevronLeft aria-hidden="true" />
-      </Button>
+      {showArrowControls ? (
+        <Button
+          aria-label="Previous image"
+          className="absolute top-1/2 left-3 z-10 -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90"
+          disabled={currentIndex === 0}
+          onClick={() => goToImage(Math.max(0, currentIndex - 1))}
+          size="icon-sm"
+          type="button"
+          variant="outline"
+        >
+          <ChevronLeft aria-hidden="true" />
+        </Button>
+      ) : null}
 
-      <div className="absolute right-1/2 bottom-3 z-10 flex translate-x-1/2 items-center gap-2">
-        {product.images.map((image, index) => {
-          const isActive = index === currentIndex
+      {showDotControls ? (
+        <div className="absolute right-1/2 bottom-3 z-10 flex translate-x-1/2 items-center gap-2">
+          {product.images.map((image, index) => {
+            const isActive = index === currentIndex
 
-          return (
-            <button
-              aria-current={isActive ? "true" : undefined}
-              aria-label={`Go to image ${index + 1} of ${product.images.length}`}
-              className={cn(
-                "size-2.5 rounded-full border border-background/70 bg-background/50 transition-colors",
-                "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                isActive ? "bg-background" : "hover:bg-background/80"
-              )}
-              key={`${image.src}-${index}`}
-              onClick={() => goToImage(index)}
-              type="button"
-            />
-          )
-        })}
-      </div>
+            return (
+              <button
+                aria-current={isActive ? "true" : undefined}
+                aria-label={`Go to image ${index + 1} of ${product.images.length}`}
+                className={cn(
+                  "size-2.5 rounded-full border border-background/70 bg-background/50 transition-colors",
+                  "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                  isActive ? "bg-background" : "hover:bg-background/80"
+                )}
+                key={`${image.src}-${index}`}
+                onClick={() => goToImage(index)}
+                type="button"
+              />
+            )
+          })}
+        </div>
+      ) : null}
 
-      <Button
-        aria-label="Next image"
-        className="absolute top-1/2 right-3 z-10 -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90"
-        disabled={currentIndex === product.images.length - 1}
-        onClick={() => goToImage(Math.min(product.images.length - 1, currentIndex + 1))}
-        size="icon-sm"
-        type="button"
-        variant="outline"
-      >
-        <ChevronRight aria-hidden="true" />
-      </Button>
+      {showArrowControls ? (
+        <Button
+          aria-label="Next image"
+          className="absolute top-1/2 right-3 z-10 -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90"
+          disabled={currentIndex === product.images.length - 1}
+          onClick={() =>
+            goToImage(Math.min(product.images.length - 1, currentIndex + 1))
+          }
+          size="icon-sm"
+          type="button"
+          variant="outline"
+        >
+          <ChevronRight aria-hidden="true" />
+        </Button>
+      ) : null}
     </div>
   )
 }
@@ -453,6 +480,7 @@ function ProductCardBase({
   product,
   layout = "vertical",
   variants = "none",
+  slideshowControls = "both",
   showWishlist = false,
   showRating = true,
   showQuickView = false,
@@ -477,92 +505,102 @@ function ProductCardBase({
   }, [hasOverlayVariants, onAddToCart, product.id])
 
   return (
-    <Card
-      className={cn(
-        "group/card relative h-full gap-0 overflow-hidden py-0",
-        layoutClasses[layout],
-        className
-      )}
-    >
-      <ProductCardImage layout={layout} product={product} />
-      <div
-        className={cn("flex flex-1 flex-col gap-4", contentLayoutClasses[layout])}
+    <ProductCardSlideshowControlsContext.Provider value={slideshowControls}>
+      <Card
+        className={cn(
+          "group/card relative h-full gap-0 overflow-hidden py-0",
+          layoutClasses[layout],
+          className
+        )}
       >
-        <div className="space-y-3">
-          {product.category ? (
-            <p className="text-sm text-muted-foreground">{product.category}</p>
-          ) : null}
-          <ProductCardTitle layout={layout} product={product} />
-          {showWishlist ? (
-            <Button
-              aria-label="Add to wishlist"
-              aria-pressed={false}
-              className="absolute top-3 right-3"
-              onClick={() => onWishlistToggle?.(product.id)}
-              size="icon"
-              type="button"
-              variant="outline"
-            >
-              <Heart aria-hidden="true" />
-            </Button>
-          ) : null}
-          {showRating && product.rating ? (
-            <Stars count={product.rating.count} value={product.rating.value} />
-          ) : null}
-          {layout === "horizontal-detailed" && product.description ? (
-            <p className="line-clamp-3 text-sm text-muted-foreground">
-              {product.description}
-            </p>
-          ) : null}
+        <ProductCardImage layout={layout} product={product} />
+        <div
+          className={cn("flex flex-1 flex-col gap-4", contentLayoutClasses[layout])}
+        >
+          <div className="space-y-3">
+            {product.category ? (
+              <p className="text-sm text-muted-foreground">{product.category}</p>
+            ) : null}
+            <ProductCardTitle layout={layout} product={product} />
+            {showWishlist ? (
+              <Button
+                aria-label="Add to wishlist"
+                aria-pressed={false}
+                className="absolute top-3 right-3"
+                onClick={() => onWishlistToggle?.(product.id)}
+                size="icon"
+                type="button"
+                variant="outline"
+              >
+                <Heart aria-hidden="true" />
+              </Button>
+            ) : null}
+            {showRating && product.rating ? (
+              <Stars count={product.rating.count} value={product.rating.value} />
+            ) : null}
+            {layout === "horizontal-detailed" && product.description ? (
+              <p className="line-clamp-3 text-sm text-muted-foreground">
+                {product.description}
+              </p>
+            ) : null}
+          </div>
+
+          {layout === "vertical" ? (
+            <div className="mt-auto flex items-center justify-between gap-3">
+              <ProductCardPrice price={product.price} />
+              <ProductCardActions
+                layout={layout}
+                onPrimaryAction={handlePrimaryAction}
+                onQuickView={onQuickView}
+                primaryActionExpanded={
+                  hasOverlayVariants ? overlayOpen : undefined
+                }
+                primaryActionHasPopup={hasOverlayVariants ? "dialog" : undefined}
+                primaryActionLabel={
+                  hasOverlayVariants ? "Quick Buy" : "Add to cart"
+                }
+                product={product}
+                showQuickView={showQuickView}
+              />
+            </div>
+          ) : (
+            <div className="mt-auto space-y-3">
+              <ProductCardPrice price={product.price} />
+              <ProductCardActions
+                layout={layout}
+                onPrimaryAction={handlePrimaryAction}
+                onQuickView={onQuickView}
+                primaryActionExpanded={
+                  hasOverlayVariants ? overlayOpen : undefined
+                }
+                primaryActionHasPopup={hasOverlayVariants ? "dialog" : undefined}
+                primaryActionLabel={
+                  hasOverlayVariants ? "Quick Buy" : "Add to cart"
+                }
+                product={product}
+                showQuickView={showQuickView}
+              />
+            </div>
+          )}
         </div>
 
-        {layout === "vertical" ? (
-          <div className="mt-auto flex items-center justify-between gap-3">
-            <ProductCardPrice price={product.price} />
-            <ProductCardActions
-              layout={layout}
-              onPrimaryAction={handlePrimaryAction}
-              onQuickView={onQuickView}
-              primaryActionExpanded={hasOverlayVariants ? overlayOpen : undefined}
-              primaryActionHasPopup={hasOverlayVariants ? "dialog" : undefined}
-              primaryActionLabel={hasOverlayVariants ? "Quick Buy" : "Add to cart"}
-              product={product}
-              showQuickView={showQuickView}
-            />
-          </div>
-        ) : (
-          <div className="mt-auto space-y-3">
-            <ProductCardPrice price={product.price} />
-            <ProductCardActions
-              layout={layout}
-              onPrimaryAction={handlePrimaryAction}
-              onQuickView={onQuickView}
-              primaryActionExpanded={hasOverlayVariants ? overlayOpen : undefined}
-              primaryActionHasPopup={hasOverlayVariants ? "dialog" : undefined}
-              primaryActionLabel={hasOverlayVariants ? "Quick Buy" : "Add to cart"}
-              product={product}
-              showQuickView={showQuickView}
-            />
-          </div>
-        )}
-      </div>
-
-      {product.badge ? <ProductCardBadge badge={product.badge} /> : null}
-      {hasOverlayVariants ? (
-        <QuickOptions
-          onAddToCart={(selectedVariants) => {
-            onAddToCart?.({
-              productId: product.id,
-              selectedVariants,
-            })
-            setOverlayOpen(false)
-          }}
-          onOpenChange={setOverlayOpen}
-          open={overlayOpen}
-          variants={product.variants ?? []}
-        />
-      ) : null}
-    </Card>
+        {product.badge ? <ProductCardBadge badge={product.badge} /> : null}
+        {hasOverlayVariants ? (
+          <QuickOptions
+            onAddToCart={(selectedVariants) => {
+              onAddToCart?.({
+                productId: product.id,
+                selectedVariants,
+              })
+              setOverlayOpen(false)
+            }}
+            onOpenChange={setOverlayOpen}
+            open={overlayOpen}
+            variants={product.variants ?? []}
+          />
+        ) : null}
+      </Card>
+    </ProductCardSlideshowControlsContext.Provider>
   )
 }
 
