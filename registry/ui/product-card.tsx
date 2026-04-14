@@ -27,6 +27,24 @@ const badgeVariants: Record<
   new: "default",
 }
 
+const layoutClasses: Record<ProductCardLayout, string> = {
+  vertical: "flex-col",
+  horizontal: "grid gap-0 sm:grid-cols-[200px_1fr]",
+  "horizontal-detailed": "grid gap-0 lg:grid-cols-[300px_1fr]",
+}
+
+const imageLayoutClasses: Record<ProductCardLayout, string> = {
+  vertical: "aspect-square",
+  horizontal: "aspect-[4/3] sm:aspect-auto sm:min-h-full",
+  "horizontal-detailed": "aspect-[4/3] lg:aspect-auto lg:min-h-full",
+}
+
+const contentLayoutClasses: Record<ProductCardLayout, string> = {
+  vertical: "p-4",
+  horizontal: "p-4",
+  "horizontal-detailed": "p-5 lg:p-6",
+}
+
 type ProductCardImageProps = {
   product: Product
   layout: ProductCardLayout
@@ -81,7 +99,7 @@ function ProductCardImage({ product, layout }: ProductCardImageProps) {
 
   const containerClasses = cn(
     "relative overflow-hidden bg-muted",
-    layout === "vertical" ? "aspect-square" : "aspect-[4/5] min-h-full"
+    imageLayoutClasses[layout]
   )
 
   if (!product.href) {
@@ -219,11 +237,14 @@ export function ProductCard({
     <Card
       className={cn(
         "group/card relative h-full gap-0 overflow-hidden py-0",
+        layoutClasses[layout],
         className
       )}
     >
       <ProductCardImage layout={layout} product={product} />
-      <div className="flex flex-1 flex-col gap-4 p-4">
+      <div
+        className={cn("flex flex-1 flex-col gap-4", contentLayoutClasses[layout])}
+      >
         <div className="space-y-3">
           {product.category ? (
             <p className="text-sm text-muted-foreground">{product.category}</p>
@@ -257,16 +278,29 @@ export function ProductCard({
           ) : null}
         </div>
 
-        <div className="mt-auto flex items-center justify-between gap-3">
-          <ProductCardPrice price={product.price} />
-          <ProductCardActions
-            layout={layout}
-            onAddToCart={onAddToCart}
-            onQuickView={onQuickView}
-            product={product}
-            showQuickView={showQuickView}
-          />
-        </div>
+        {layout === "vertical" ? (
+          <div className="mt-auto flex items-center justify-between gap-3">
+            <ProductCardPrice price={product.price} />
+            <ProductCardActions
+              layout={layout}
+              onAddToCart={onAddToCart}
+              onQuickView={onQuickView}
+              product={product}
+              showQuickView={showQuickView}
+            />
+          </div>
+        ) : (
+          <div className="mt-auto space-y-3">
+            <ProductCardPrice price={product.price} />
+            <ProductCardActions
+              layout={layout}
+              onAddToCart={onAddToCart}
+              onQuickView={onQuickView}
+              product={product}
+              showQuickView={showQuickView}
+            />
+          </div>
+        )}
       </div>
 
       {product.badge ? <ProductCardBadge badge={product.badge} /> : null}
