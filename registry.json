@@ -8,7 +8,16 @@
       "type": "registry:ui",
       "title": "Product Card",
       "description": "E-commerce product card with configurable layouts and variant modes.",
-      "registryDependencies": ["button", "card", "badge"],
+      "registryDependencies": [
+        "button",
+        "card",
+        "badge",
+        "checkbox",
+        "radio-group",
+        "select",
+        "slider",
+        "toggle-group"
+      ],
       "files": [
         { "path": "registry/ui/product-card.tsx", "type": "registry:ui" },
         { "path": "registry/ui/quick-options.tsx", "type": "registry:ui" },
