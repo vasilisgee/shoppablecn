@@ -26,19 +26,34 @@ export type ProductImage = {
 }
 
 export type VariantOption = {
+  /** Display label (e.g., "Cream", "Medium"). */
   label: string
+  /** Machine value (e.g., "cream", "m"). */
   value: string
-  /** CSS color value for type="swatch". */
+  /** CSS color value for type="swatch" (e.g., "#f5f0e8", "oklch(...)"). */
   swatch?: string
+  /** If true, option renders but is not selectable. */
   disabled?: boolean
 }
 
 export type ProductVariant = {
+  /** Unique identifier used as the key in SelectedVariants. */
   id: string
+  /** Display label (e.g., "Color", "Size"). */
   name: string
+  /** Input type for rendering. */
   type: "swatch" | "pills" | "select" | "slider" | "checkbox" | "radio"
+  /** If true, user must select a value before Add to Cart is enabled. Default: false. */
   required?: boolean
+  /** Option list. For type="slider", this is unused. */
   options: VariantOption[]
+  /** Optional config specific to type="slider". */
+  sliderConfig?: {
+    min: number
+    max: number
+    step: number
+    unit?: string
+  }
 }
 
 export type Product = {
