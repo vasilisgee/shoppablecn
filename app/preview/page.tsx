@@ -31,6 +31,11 @@ export default function PreviewIndexPage() {
             QuickOptions: all 6 variant types and validation
           </Link>
         </li>
+        <li>
+          <Link className="underline underline-offset-4" href="/preview/hotspot-image">
+            HotspotImage: scenes, pin variants, content types, responsive
+          </Link>
+        </li>
       </ul>
     </main>
   )
