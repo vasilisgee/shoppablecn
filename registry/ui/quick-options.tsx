@@ -61,6 +61,21 @@ function getInitialSelectedVariants(
   }, {})
 }
 
+function hasSelection(
+  variant: ProductVariant,
+  value: SelectedVariants[string] | undefined
+) {
+  if (typeof value === "undefined" || value === "") {
+    return false
+  }
+
+  if (variant.type === "checkbox") {
+    return Array.isArray(value) && value.length > 0
+  }
+
+  return true
+}
+
 export function QuickOptions({
   variants,
   open,
@@ -141,6 +156,12 @@ export function QuickOptions({
     },
     [closeOverlay]
   )
+
+  const isAddToCartEnabled = React.useMemo(() => {
+    return variants
+      .filter((variant) => variant.required)
+      .every((variant) => hasSelection(variant, selected[variant.id]))
+  }, [selected, variants])
 
   const renderVariantControl = React.useCallback(
     (variant: ProductVariant) => {
@@ -440,7 +461,14 @@ export function QuickOptions({
       <div className="border-t px-4 py-4">
         <Button
           className="w-full"
-          onClick={() => onAddToCart(selected)}
+          disabled={!isAddToCartEnabled}
+          onClick={() => {
+            if (!isAddToCartEnabled) {
+              return
+            }
+
+            onAddToCart(selected)
+          }}
           type="button"
         >
           {addToCartLabel}
