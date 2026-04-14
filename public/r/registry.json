@@ -1,0 +1,41 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "shoppablecn",
+  "homepage": "https://shoppablecn.dev",
+  "items": [
+    {
+      "name": "product-card",
+      "type": "registry:ui",
+      "title": "Product Card",
+      "description": "E-commerce product card with configurable layouts and variant modes.",
+      "registryDependencies": ["button", "card", "badge"],
+      "files": [
+        { "path": "registry/ui/product-card.tsx", "type": "registry:ui" },
+        { "path": "registry/ui/types.ts", "type": "registry:ui" }
+      ]
+    },
+    {
+      "name": "quick-options",
+      "type": "registry:ui",
+      "title": "Quick Options Overlay",
+      "description": "Slide-up overlay panel with variant selectors (swatches, pills, select, slider, checkbox, radio).",
+      "registryDependencies": ["button", "radio-group", "toggle-group", "select", "slider", "checkbox"],
+      "files": [
+        { "path": "registry/ui/quick-options.tsx", "type": "registry:ui" },
+        { "path": "registry/ui/types.ts", "type": "registry:ui" }
+      ]
+    },
+    {
+      "name": "hotspot-image",
+      "type": "registry:ui",
+      "title": "Hotspot Image",
+      "description": "Image container with positioned hotspot pins for shoppable or marketing scenes.",
+      "registryDependencies": ["popover", "sheet"],
+      "files": [
+        { "path": "registry/ui/hotspot-image.tsx", "type": "registry:ui" },
+        { "path": "registry/ui/hotspot-pin.tsx", "type": "registry:ui" },
+        { "path": "registry/ui/types.ts", "type": "registry:ui" }
+      ]
+    }
+  ]
+}

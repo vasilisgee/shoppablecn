@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "product-card",
+  "title": "Product Card",
+  "description": "E-commerce product card with configurable layouts and variant modes.",
+  "registryDependencies": [
+    "button",
+    "card",
+    "badge"
+  ],
+  "files": [
+    {
+      "path": "registry/ui/product-card.tsx",
+      "content": "export function ProductCard() {\n  return null\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "registry/ui/types.ts",
+      "content": "// Types will be defined in M2.\nexport {}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "type": "registry:ui"
+}

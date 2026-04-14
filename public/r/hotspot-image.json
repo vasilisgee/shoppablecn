@@ -1,0 +1,28 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "hotspot-image",
+  "title": "Hotspot Image",
+  "description": "Image container with positioned hotspot pins for shoppable or marketing scenes.",
+  "registryDependencies": [
+    "popover",
+    "sheet"
+  ],
+  "files": [
+    {
+      "path": "registry/ui/hotspot-image.tsx",
+      "content": "export function HotspotImage() {\n  return null\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "registry/ui/hotspot-pin.tsx",
+      "content": "export function HotspotPin() {\n  return null\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "registry/ui/types.ts",
+      "content": "// Types will be defined in M2.\nexport {}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "type": "registry:ui"
+}
