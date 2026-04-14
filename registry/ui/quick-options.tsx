@@ -420,16 +420,9 @@ export function QuickOptions({
   return (
     <div
       ref={containerRef}
-      aria-hidden={!open}
       aria-label="Quick options"
       aria-modal="true"
-      className={cn(
-        "absolute inset-0 z-20 flex flex-col bg-background",
-        "transition-transform duration-300 ease-out motion-reduce:transition-none",
-        "data-[state=closed]:pointer-events-none data-[state=closed]:translate-y-full data-[state=open]:translate-y-0",
-        className
-      )}
-      data-state={open ? "open" : "closed"}
+      className={cn("absolute inset-0 z-20 flex flex-col bg-background", className)}
       onKeyDown={handleKeyDown}
       role="dialog"
     >
