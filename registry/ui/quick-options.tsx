@@ -137,6 +137,60 @@ export function QuickOptions({
     [closeOverlay]
   )
 
+  const renderVariantControl = React.useCallback(
+    (variant: ProductVariant) => {
+      if (variant.type === "swatch") {
+        const currentValue =
+          typeof selected[variant.id] === "string"
+            ? selected[variant.id]
+            : undefined
+
+        return (
+          <div className="flex flex-wrap gap-3">
+            {variant.options.map((option) => {
+              const isSelected = currentValue === option.value
+
+              return (
+                <button
+                  aria-disabled={option.disabled ? "true" : undefined}
+                  aria-label={`${variant.name}: ${option.label}`}
+                  aria-pressed={isSelected}
+                  className={cn(
+                    "size-8 rounded-full border border-border transition-shadow outline-none",
+                    "focus-visible:ring-3 focus-visible:ring-ring/50",
+                    isSelected ? "ring-2 ring-ring ring-offset-2" : undefined,
+                    option.disabled
+                      ? "cursor-not-allowed opacity-40"
+                      : "cursor-pointer"
+                  )}
+                  disabled={option.disabled}
+                  key={option.value}
+                  onClick={() => {
+                    setSelected((currentSelected) => ({
+                      ...currentSelected,
+                      [variant.id]: option.value,
+                    }))
+                  }}
+                  style={{
+                    backgroundColor: option.swatch ?? "transparent",
+                  }}
+                  type="button"
+                >
+                  <span className="sr-only">{option.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        )
+      }
+
+      return (
+        <p className="text-xs text-muted-foreground">{variant.type} options</p>
+      )
+    },
+    [selected]
+  )
+
   return (
     <div
       ref={containerRef}
@@ -176,11 +230,16 @@ export function QuickOptions({
         {variants.map((variant) => (
           <section className="space-y-2" key={variant.id}>
             <div className="space-y-1">
-              <p className="text-sm font-medium">{variant.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {variant.type} options
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium">{variant.name}</p>
+                {variant.required ? (
+                  <span className="text-xs text-muted-foreground">
+                    Required
+                  </span>
+                ) : null}
+              </div>
             </div>
+            {renderVariantControl(variant)}
           </section>
         ))}
       </div>
