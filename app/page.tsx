@@ -2,9 +2,9 @@ import Link from "next/link"
 
 import { buttonVariants } from "@/components/ui/button"
 import {
-  mockProductNew,
   mockProductSimple,
   mockProductWithSale,
+  mockProductWithVariants,
 } from "@/lib/mock-products"
 import { ProductCard } from "@/registry/ui/product-card"
 
@@ -53,8 +53,9 @@ export default function Home() {
           <div className="space-y-2">
             <h2 className="text-2xl font-semibold tracking-tight">Preview</h2>
             <p className="max-w-2xl text-muted-foreground">
-              A small slice of the ProductCard registry item using the default
-              shadcn theme tokens and the M2 layout set.
+              A small slice of the ProductCard registry item showing the M3
+              slideshow and Quick Buy overlay on top of the default shadcn
+              theme tokens.
             </p>
           </div>
 
@@ -64,7 +65,11 @@ export default function Home() {
               product={mockProductWithSale}
               variants="none"
             />
-            <ProductCard layout="vertical" product={mockProductNew} variants="none" />
+            <ProductCard
+              layout="vertical"
+              product={mockProductWithVariants}
+              variants="overlay"
+            />
             <ProductCard
               layout="vertical"
               product={mockProductSimple}
