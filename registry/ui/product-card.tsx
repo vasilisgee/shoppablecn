@@ -2,7 +2,14 @@
 
 import * as React from "react"
 import Image from "next/image"
-import { Eye, Heart, ShoppingCart, Star } from "lucide-react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Heart,
+  ShoppingCart,
+  Star,
+} from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -43,6 +50,12 @@ const contentLayoutClasses: Record<ProductCardLayout, string> = {
   vertical: "p-4",
   horizontal: "p-4",
   "horizontal-detailed": "p-5 lg:p-6",
+}
+
+function getImageSizes(layout: ProductCardLayout) {
+  return layout === "vertical"
+    ? "(min-width: 1024px) 20rem, (min-width: 768px) 33vw, 100vw"
+    : "(min-width: 1024px) 18rem, 100vw"
 }
 
 export type ProductCardImageProps = {
@@ -113,51 +126,183 @@ export function ProductCardImage({
   product,
   layout,
 }: ProductCardImageProps) {
-  const [hasImageError, setHasImageError] = React.useState(false)
-  const primaryImage = product.images[0]
-
-  const imageContent = hasImageError ? (
-    <div
-      aria-label={`${primaryImage.alt} unavailable`}
-      className="flex h-full w-full items-center justify-center bg-muted px-4 text-center text-sm text-muted-foreground"
-      role="img"
-    >
-      Image unavailable
-    </div>
-  ) : (
-    <Image
-      fill
-      alt={primaryImage.alt}
-      className="object-cover transition-transform duration-200 motion-reduce:transition-none group-hover/card:scale-[1.02]"
-      onError={() => setHasImageError(true)}
-      sizes={
-        layout === "vertical"
-          ? "(min-width: 1024px) 20rem, (min-width: 768px) 33vw, 100vw"
-          : "(min-width: 1024px) 18rem, 100vw"
-      }
-      src={primaryImage.src}
-    />
-  )
-
+  const [currentIndex, setCurrentIndex] = React.useState(0)
+  const [imageErrors, setImageErrors] = React.useState<number[]>([])
+  const hasMultipleImages = product.images.length > 1
   const containerClasses = cn(
     "relative overflow-hidden bg-muted",
     imageLayoutClasses[layout]
   )
+  const imageSizes = getImageSizes(layout)
 
-  if (!product.href) {
-    return <div className={containerClasses}>{imageContent}</div>
+  React.useEffect(() => {
+    setCurrentIndex(0)
+    setImageErrors([])
+  }, [product.id])
+
+  const handleImageError = React.useCallback((index: number) => {
+    setImageErrors((currentErrors) => {
+      if (currentErrors.includes(index)) {
+        return currentErrors
+      }
+
+      return [...currentErrors, index]
+    })
+  }, [])
+
+  const renderImageFallback = React.useCallback(
+    (alt: string) => (
+      <div
+        aria-label={`${alt} unavailable`}
+        className="flex h-full w-full items-center justify-center bg-muted px-4 text-center text-sm text-muted-foreground"
+        role="img"
+      >
+        Image unavailable
+      </div>
+    ),
+    []
+  )
+
+  if (!hasMultipleImages) {
+    const primaryImage = product.images[0]
+    const hasImageError = imageErrors.includes(0)
+
+    const imageContent = hasImageError ? (
+      renderImageFallback(primaryImage.alt)
+    ) : (
+      <Image
+        fill
+        alt={primaryImage.alt}
+        className="object-cover transition-transform duration-200 motion-reduce:transition-none group-hover/card:scale-[1.02]"
+        onError={() => handleImageError(0)}
+        sizes={imageSizes}
+        src={primaryImage.src}
+      />
+    )
+
+    if (!product.href) {
+      return <div className={containerClasses}>{imageContent}</div>
+    }
+
+    return (
+      <a
+        className={cn(
+          containerClasses,
+          "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        )}
+        href={product.href}
+      >
+        {imageContent}
+      </a>
+    )
   }
 
-  return (
+  const slideList = (
+    <div aria-live="polite" className="relative h-full w-full">
+      {product.images.map((image, index) => {
+        const isActive = index === currentIndex
+        const hasImageError = imageErrors.includes(index)
+
+        return (
+          <div
+            aria-hidden={!isActive}
+            aria-label={`${index + 1} of ${product.images.length}`}
+            aria-roledescription="slide"
+            className={cn(
+              "absolute inset-0 transition-opacity duration-200 motion-reduce:transition-none",
+              isActive ? "opacity-100" : "pointer-events-none opacity-0"
+            )}
+            key={`${product.id}-${image.src}-${index}`}
+            role="group"
+          >
+            {hasImageError ? (
+              renderImageFallback(image.alt)
+            ) : (
+              <Image
+                fill
+                alt={image.alt}
+                className="object-cover transition-transform duration-200 motion-reduce:transition-none group-hover/card:scale-[1.02]"
+                loading={index === 0 ? "eager" : "lazy"}
+                onError={() => handleImageError(index)}
+                sizes={imageSizes}
+                src={image.src}
+              />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+
+  const mediaContent = product.href ? (
     <a
-      className={cn(
-        containerClasses,
-        "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-      )}
+      className="absolute inset-0 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       href={product.href}
     >
-      {imageContent}
+      {slideList}
     </a>
+  ) : (
+    <div className="absolute inset-0">{slideList}</div>
+  )
+
+  return (
+    <div
+      aria-label={`${product.title} images`}
+      aria-roledescription="carousel"
+      className={containerClasses}
+      role="region"
+    >
+      {mediaContent}
+
+      <Button
+        aria-label="Previous image"
+        className="absolute top-1/2 left-3 z-10 -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90"
+        disabled={currentIndex === 0}
+        onClick={() => setCurrentIndex((index) => Math.max(0, index - 1))}
+        size="icon-sm"
+        type="button"
+        variant="outline"
+      >
+        <ChevronLeft aria-hidden="true" />
+      </Button>
+
+      <div className="absolute right-1/2 bottom-3 z-10 flex translate-x-1/2 items-center gap-2">
+        {product.images.map((image, index) => {
+          const isActive = index === currentIndex
+
+          return (
+            <button
+              aria-current={isActive ? "true" : undefined}
+              aria-label={`Go to image ${index + 1} of ${product.images.length}`}
+              className={cn(
+                "size-2.5 rounded-full border border-background/70 bg-background/50 transition-colors",
+                "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                isActive ? "bg-background" : "hover:bg-background/80"
+              )}
+              key={`${image.src}-${index}`}
+              onClick={() => setCurrentIndex(index)}
+              type="button"
+            />
+          )
+        })}
+      </div>
+
+      <Button
+        aria-label="Next image"
+        className="absolute top-1/2 right-3 z-10 -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90"
+        disabled={currentIndex === product.images.length - 1}
+        onClick={() =>
+          setCurrentIndex((index) =>
+            Math.min(product.images.length - 1, index + 1)
+          )
+        }
+        size="icon-sm"
+        type="button"
+        variant="outline"
+      >
+        <ChevronRight aria-hidden="true" />
+      </Button>
+    </div>
   )
 }
 
