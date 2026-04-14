@@ -3,7 +3,17 @@
 import type { ReactNode } from "react"
 
 import { Separator } from "@/components/ui/separator"
-import { mockProductBrokenImage, mockProductDetailed, mockProductLongTitle, mockProductLowRating, mockProductNew, mockProductNoCategory, mockProducts, mockProductSimple, mockProductWithSale } from "@/lib/mock-products"
+import {
+  mockProductBrokenImage,
+  mockProductDetailed,
+  mockProductLongTitle,
+  mockProductLowRating,
+  mockProductNew,
+  mockProductNoCategory,
+  mockProducts,
+  mockProductSimple,
+  mockProductWithSale,
+} from "@/lib/mock-products"
 import { ProductCard } from "@/registry/ui/product-card"
 import type { Product, ProductCardProps } from "@/registry/ui/types"
 
@@ -60,7 +70,11 @@ export function ProductCardPreviewContent() {
         title={'Vertical / variants=none / minimal'}
       >
         <div className="max-w-sm">
-          <ProductCard layout="vertical" product={mockProductSimple} variants="none" />
+          <ProductCard
+            layout="vertical"
+            product={mockProductSimple}
+            variants="none"
+          />
         </div>
       </PreviewExample>
 
@@ -97,7 +111,11 @@ export function ProductCardPreviewContent() {
         title={'Vertical / variants=none / rating=true'}
       >
         <div className="max-w-sm">
-          <ProductCard layout="vertical" product={mockProductLowRating} variants="none" />
+          <ProductCard
+            layout="vertical"
+            product={mockProductLowRating}
+            variants="none"
+          />
         </div>
       </PreviewExample>
 
@@ -220,7 +238,11 @@ export function ProductCardPreviewContent() {
         description={'layout="horizontal" variants="none"'}
         title={'Horizontal / variants=none / minimal'}
       >
-        <ProductCard layout="horizontal" product={mockProductSimple} variants="none" />
+        <ProductCard
+          layout="horizontal"
+          product={mockProductSimple}
+          variants="none"
+        />
       </PreviewExample>
 
       <PreviewSeparator />
@@ -270,7 +292,11 @@ export function ProductCardPreviewContent() {
         description={'layout="horizontal" variants="none" rating=false'}
         title={'Horizontal / variants=none / rating=false'}
       >
-        <ProductCard layout="horizontal" product={mockProductSimple} variants="none" />
+        <ProductCard
+          layout="horizontal"
+          product={mockProductSimple}
+          variants="none"
+        />
       </PreviewExample>
 
       <PreviewSeparator />

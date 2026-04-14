@@ -297,7 +297,7 @@ function ProductCardBase({
           {showWishlist ? (
             <Button
               aria-label="Add to wishlist"
-              aria-pressed="false"
+              aria-pressed={false}
               className="absolute top-3 right-3"
               onClick={() => onWishlistToggle?.(product.id)}
               size="icon"
