@@ -6,7 +6,12 @@
   "registryDependencies": [
     "button",
     "card",
-    "badge"
+    "badge",
+    "checkbox",
+    "radio-group",
+    "select",
+    "slider",
+    "toggle-group"
   ],
   "files": [
     {
