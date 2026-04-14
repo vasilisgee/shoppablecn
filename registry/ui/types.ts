@@ -46,7 +46,8 @@ export type Product = {
   title: string
   description?: string
   category?: string
-  image: ProductImage
+  /** Array of product images. Must contain at least one entry. First image is the default. */
+  images: ProductImage[]
   price: Price
   rating?: Rating
   badge?: ProductBadge

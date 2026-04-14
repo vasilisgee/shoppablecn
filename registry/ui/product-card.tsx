@@ -114,10 +114,11 @@ export function ProductCardImage({
   layout,
 }: ProductCardImageProps) {
   const [hasImageError, setHasImageError] = React.useState(false)
+  const primaryImage = product.images[0]
 
   const imageContent = hasImageError ? (
     <div
-      aria-label={`${product.image.alt} unavailable`}
+      aria-label={`${primaryImage.alt} unavailable`}
       className="flex h-full w-full items-center justify-center bg-muted px-4 text-center text-sm text-muted-foreground"
       role="img"
     >
@@ -126,7 +127,7 @@ export function ProductCardImage({
   ) : (
     <Image
       fill
-      alt={product.image.alt}
+      alt={primaryImage.alt}
       className="object-cover transition-transform duration-200 motion-reduce:transition-none group-hover/card:scale-[1.02]"
       onError={() => setHasImageError(true)}
       sizes={
@@ -134,7 +135,7 @@ export function ProductCardImage({
           ? "(min-width: 1024px) 20rem, (min-width: 768px) 33vw, 100vw"
           : "(min-width: 1024px) 18rem, 100vw"
       }
-      src={product.image.src}
+      src={primaryImage.src}
     />
   )
 
