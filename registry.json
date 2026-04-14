@@ -11,6 +11,7 @@
       "registryDependencies": ["button", "card", "badge"],
       "files": [
         { "path": "registry/ui/product-card.tsx", "type": "registry:ui" },
+        { "path": "registry/ui/quick-options.tsx", "type": "registry:ui" },
         { "path": "registry/ui/types.ts", "type": "registry:ui" },
         { "path": "registry/ui/utils.ts", "type": "registry:ui" }
       ]
