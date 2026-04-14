@@ -163,6 +163,21 @@ export function ProductCardImage({
     []
   )
 
+  const handleCarouselKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === "ArrowLeft") {
+        event.preventDefault()
+        setCurrentIndex((index) => Math.max(0, index - 1))
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault()
+        setCurrentIndex((index) => Math.min(product.images.length - 1, index + 1))
+      }
+    },
+    [product.images.length]
+  )
+
   if (!hasMultipleImages) {
     const primaryImage = product.images[0]
     const hasImageError = imageErrors.includes(0)
@@ -250,6 +265,7 @@ export function ProductCardImage({
       aria-label={`${product.title} images`}
       aria-roledescription="carousel"
       className={containerClasses}
+      onKeyDown={handleCarouselKeyDown}
       role="region"
     >
       {mediaContent}
