@@ -163,12 +163,8 @@ export function QuickOptions({
       .every((variant) => hasSelection(variant, selected[variant.id]))
   }, [selected, variants])
 
-  if (!open) {
-    return null
-  }
-
   const renderVariantControl = React.useCallback(
-    (variant: ProductVariant) => {
+    (variant: ProductVariant, labelId: string) => {
       if (variant.type === "swatch") {
         const currentValue =
           typeof selected[variant.id] === "string"
@@ -221,6 +217,7 @@ export function QuickOptions({
 
         return (
           <ToggleGroup
+            aria-label={variant.name}
             className="w-full flex-wrap"
             multiple={false}
             onValueChange={(value) => {
@@ -229,6 +226,7 @@ export function QuickOptions({
                 [variant.id]: value[0] ?? "",
               }))
             }}
+            role="toolbar"
             value={currentValue ? [currentValue] : []}
           >
             {variant.options.map((option) => (
@@ -259,7 +257,11 @@ export function QuickOptions({
             }}
             value={currentValue}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger
+              aria-labelledby={labelId}
+              aria-label={variant.name}
+              className="w-full"
+            >
               <SelectValue
                 placeholder={`Choose ${variant.name.toLowerCase()}`}
               />
@@ -301,6 +303,8 @@ export function QuickOptions({
               {variant.sliderConfig.unit ? ` ${variant.sliderConfig.unit}` : ""}
             </p>
             <Slider
+              aria-labelledby={labelId}
+              aria-label={variant.name}
               defaultValue={[variant.sliderConfig.min]}
               max={variant.sliderConfig.max}
               min={variant.sliderConfig.min}
@@ -409,6 +413,10 @@ export function QuickOptions({
     [selected]
   )
 
+  if (!open) {
+    return null
+  }
+
   return (
     <div
       ref={containerRef}
@@ -445,21 +453,27 @@ export function QuickOptions({
       </div>
 
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
-        {variants.map((variant) => (
-          <section className="space-y-2" key={variant.id}>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-medium">{variant.name}</p>
-                {variant.required ? (
-                  <span className="text-xs text-muted-foreground">
-                    Required
-                  </span>
-                ) : null}
+        {variants.map((variant) => {
+          const labelId = `${variant.id}-label`
+
+          return (
+            <section className="space-y-2" key={variant.id}>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium" id={labelId}>
+                    {variant.name}
+                  </p>
+                  {variant.required ? (
+                    <span className="text-xs text-muted-foreground">
+                      Required
+                    </span>
+                  ) : null}
+                </div>
               </div>
-            </div>
-            {renderVariantControl(variant)}
-          </section>
-        ))}
+              {renderVariantControl(variant, labelId)}
+            </section>
+          )
+        })}
       </div>
 
       <div className="border-t px-4 py-4">
