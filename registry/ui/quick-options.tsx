@@ -4,6 +4,9 @@ import * as React from "react"
 import { X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Slider } from "@/components/ui/slider"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
 
 import type { ProductVariant, SelectedVariants } from "./types"
@@ -180,6 +183,111 @@ export function QuickOptions({
                 </button>
               )
             })}
+          </div>
+        )
+      }
+
+      if (variant.type === "pills") {
+        const selectedValue = selected[variant.id]
+        const currentValue =
+          typeof selectedValue === "string" ? selectedValue : undefined
+
+        return (
+          <ToggleGroup
+            className="w-full flex-wrap"
+            multiple={false}
+            onValueChange={(value) => {
+              setSelected((currentSelected) => ({
+                ...currentSelected,
+                [variant.id]: value[0] ?? "",
+              }))
+            }}
+            value={currentValue ? [currentValue] : []}
+          >
+            {variant.options.map((option) => (
+              <ToggleGroupItem
+                disabled={option.disabled}
+                key={option.value}
+                value={option.value}
+              >
+                {option.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        )
+      }
+
+      if (variant.type === "select") {
+        const selectedValue = selected[variant.id]
+        const currentValue =
+          typeof selectedValue === "string" ? selectedValue : null
+
+        return (
+          <Select
+            onValueChange={(value) => {
+              setSelected((currentSelected) => ({
+                ...currentSelected,
+                [variant.id]: value ?? "",
+              }))
+            }}
+            value={currentValue}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue
+                placeholder={`Choose ${variant.name.toLowerCase()}`}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {variant.options.map((option) => (
+                <SelectItem
+                  disabled={option.disabled}
+                  key={option.value}
+                  value={option.value}
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )
+      }
+
+      if (variant.type === "slider") {
+        if (!variant.sliderConfig) {
+          return (
+            <p className="text-xs text-muted-foreground">
+              Slider configuration is missing.
+            </p>
+          )
+        }
+
+        const selectedValue = selected[variant.id]
+        const currentValue =
+          typeof selectedValue === "number"
+            ? selectedValue
+            : variant.sliderConfig.min
+
+        return (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {currentValue}
+              {variant.sliderConfig.unit ? ` ${variant.sliderConfig.unit}` : ""}
+            </p>
+            <Slider
+              defaultValue={[variant.sliderConfig.min]}
+              max={variant.sliderConfig.max}
+              min={variant.sliderConfig.min}
+              onValueChange={(value) => {
+                const nextValue = Array.isArray(value) ? value[0] : value
+
+                setSelected((currentSelected) => ({
+                  ...currentSelected,
+                  [variant.id]: nextValue,
+                }))
+              }}
+              step={variant.sliderConfig.step}
+              value={[currentValue]}
+            />
           </div>
         )
       }
