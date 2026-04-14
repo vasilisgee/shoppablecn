@@ -132,6 +132,7 @@ export function ProductCardImage({
 }: ProductCardImageProps) {
   const [currentIndex, setCurrentIndex] = React.useState(0)
   const [imageErrors, setImageErrors] = React.useState<number[]>([])
+  const [loadedImageIndexes, setLoadedImageIndexes] = React.useState([0])
   const hasMultipleImages = product.images.length > 1
   const containerClasses = cn(
     "relative overflow-hidden bg-muted",
@@ -142,6 +143,7 @@ export function ProductCardImage({
   React.useEffect(() => {
     setCurrentIndex(0)
     setImageErrors([])
+    setLoadedImageIndexes([0])
   }, [product.id])
 
   const handleImageError = React.useCallback((index: number) => {
@@ -167,19 +169,30 @@ export function ProductCardImage({
     []
   )
 
+  const goToImage = React.useCallback((nextIndex: number) => {
+    setLoadedImageIndexes((currentIndexes) => {
+      if (currentIndexes.includes(nextIndex)) {
+        return currentIndexes
+      }
+
+      return [...currentIndexes, nextIndex]
+    })
+    setCurrentIndex(nextIndex)
+  }, [])
+
   const handleCarouselKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (event.key === "ArrowLeft") {
         event.preventDefault()
-        setCurrentIndex((index) => Math.max(0, index - 1))
+        goToImage(Math.max(0, currentIndex - 1))
       }
 
       if (event.key === "ArrowRight") {
         event.preventDefault()
-        setCurrentIndex((index) => Math.min(product.images.length - 1, index + 1))
+        goToImage(Math.min(product.images.length - 1, currentIndex + 1))
       }
     },
-    [product.images.length]
+    [currentIndex, goToImage, product.images.length]
   )
 
   if (!hasMultipleImages) {
@@ -221,6 +234,7 @@ export function ProductCardImage({
       {product.images.map((image, index) => {
         const isActive = index === currentIndex
         const hasImageError = imageErrors.includes(index)
+        const shouldLoadImage = loadedImageIndexes.includes(index)
 
         return (
           <div
@@ -236,6 +250,8 @@ export function ProductCardImage({
           >
             {hasImageError ? (
               renderImageFallback(image.alt)
+            ) : !shouldLoadImage ? (
+              <div aria-hidden="true" className="h-full w-full bg-muted" />
             ) : (
               <Image
                 fill
@@ -278,7 +294,7 @@ export function ProductCardImage({
         aria-label="Previous image"
         className="absolute top-1/2 left-3 z-10 -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90"
         disabled={currentIndex === 0}
-        onClick={() => setCurrentIndex((index) => Math.max(0, index - 1))}
+        onClick={() => goToImage(Math.max(0, currentIndex - 1))}
         size="icon-sm"
         type="button"
         variant="outline"
@@ -300,7 +316,7 @@ export function ProductCardImage({
                 isActive ? "bg-background" : "hover:bg-background/80"
               )}
               key={`${image.src}-${index}`}
-              onClick={() => setCurrentIndex(index)}
+              onClick={() => goToImage(index)}
               type="button"
             />
           )
@@ -311,11 +327,7 @@ export function ProductCardImage({
         aria-label="Next image"
         className="absolute top-1/2 right-3 z-10 -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90"
         disabled={currentIndex === product.images.length - 1}
-        onClick={() =>
-          setCurrentIndex((index) =>
-            Math.min(product.images.length - 1, index + 1)
-          )
-        }
+        onClick={() => goToImage(Math.min(product.images.length - 1, currentIndex + 1))}
         size="icon-sm"
         type="button"
         variant="outline"
