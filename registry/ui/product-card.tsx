@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Image from "next/image"
-import { Eye, Heart, ShoppingCart } from "lucide-react"
+import { Eye, Heart, ShoppingCart, Star } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -69,6 +69,44 @@ export type ProductCardActionsProps = {
   showQuickView: boolean
   onAddToCart?: ProductCardProps["onAddToCart"]
   onQuickView?: ProductCardProps["onQuickView"]
+}
+
+type StarsProps = {
+  value: number
+  count: number
+}
+
+function Stars({ value, count }: StarsProps) {
+  const clampedValue = Math.max(0, Math.min(5, value))
+
+  return (
+    <div
+      aria-label={`${clampedValue} out of 5 stars, ${count} reviews`}
+      className="flex items-center gap-2 text-sm text-muted-foreground"
+    >
+      <div className="flex items-center gap-0.5" aria-hidden="true">
+        {Array.from({ length: 5 }, (_, index) => {
+          const fillPercentage = Math.max(
+            0,
+            Math.min(100, (clampedValue - index) * 100)
+          )
+
+          return (
+            <span className="relative inline-flex" key={`${index}-${count}`}>
+              <Star className="size-4 text-muted-foreground/40" />
+              <span
+                className="absolute inset-y-0 left-0 overflow-hidden"
+                style={{ width: `${fillPercentage}%` }}
+              >
+                <Star className="size-4 fill-current text-foreground" />
+              </span>
+            </span>
+          )
+        })}
+      </div>
+      <span>({count})</span>
+    </div>
+  )
 }
 
 export function ProductCardImage({
@@ -270,12 +308,7 @@ function ProductCardBase({
             </Button>
           ) : null}
           {showRating && product.rating ? (
-            <p
-              aria-label={`${product.rating.value} out of 5 stars, ${product.rating.count} reviews`}
-              className="text-sm text-muted-foreground"
-            >
-              {product.rating.value.toFixed(1)} ({product.rating.count})
-            </p>
+            <Stars count={product.rating.count} value={product.rating.value} />
           ) : null}
           {layout === "horizontal-detailed" && product.description ? (
             <p className="line-clamp-3 text-sm text-muted-foreground">
