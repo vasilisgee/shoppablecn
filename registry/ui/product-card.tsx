@@ -45,25 +45,25 @@ const contentLayoutClasses: Record<ProductCardLayout, string> = {
   "horizontal-detailed": "p-5 lg:p-6",
 }
 
-type ProductCardImageProps = {
+export type ProductCardImageProps = {
   product: Product
   layout: ProductCardLayout
 }
 
-type ProductCardTitleProps = {
+export type ProductCardTitleProps = {
   product: Product
   layout: ProductCardLayout
 }
 
-type ProductCardPriceProps = {
+export type ProductCardPriceProps = {
   price: Price
 }
 
-type ProductCardBadgeProps = {
+export type ProductCardBadgeProps = {
   badge: ProductBadge
 }
 
-type ProductCardActionsProps = {
+export type ProductCardActionsProps = {
   layout: ProductCardLayout
   product: Product
   showQuickView: boolean
@@ -71,7 +71,10 @@ type ProductCardActionsProps = {
   onQuickView?: ProductCardProps["onQuickView"]
 }
 
-function ProductCardImage({ product, layout }: ProductCardImageProps) {
+export function ProductCardImage({
+  product,
+  layout,
+}: ProductCardImageProps) {
   const [hasImageError, setHasImageError] = React.useState(false)
 
   const imageContent = hasImageError ? (
@@ -119,7 +122,10 @@ function ProductCardImage({ product, layout }: ProductCardImageProps) {
   )
 }
 
-function ProductCardTitle({ product, layout }: ProductCardTitleProps) {
+export function ProductCardTitle({
+  product,
+  layout,
+}: ProductCardTitleProps) {
   const titleClasses = cn(
     "font-semibold tracking-tight",
     layout === "horizontal-detailed" ? "text-xl" : "line-clamp-2 text-lg"
@@ -142,7 +148,7 @@ function ProductCardTitle({ product, layout }: ProductCardTitleProps) {
   )
 }
 
-function ProductCardPrice({ price }: ProductCardPriceProps) {
+export function ProductCardPrice({ price }: ProductCardPriceProps) {
   return (
     <div className="flex items-end gap-2">
       <span className="text-base font-semibold">{formatPrice(price)}</span>
@@ -164,7 +170,7 @@ function ProductCardPrice({ price }: ProductCardPriceProps) {
   )
 }
 
-function ProductCardBadge({ badge }: ProductCardBadgeProps) {
+export function ProductCardBadge({ badge }: ProductCardBadgeProps) {
   return (
     <Badge
       className="pointer-events-none absolute top-3 left-3"
@@ -175,7 +181,7 @@ function ProductCardBadge({ badge }: ProductCardBadgeProps) {
   )
 }
 
-function ProductCardActions({
+export function ProductCardActions({
   layout,
   product,
   showQuickView,
@@ -222,7 +228,7 @@ function ProductCardActions({
   )
 }
 
-export function ProductCard({
+function ProductCardBase({
   product,
   layout = "vertical",
   showWishlist = false,
@@ -307,3 +313,11 @@ export function ProductCard({
     </Card>
   )
 }
+
+export const ProductCard = Object.assign(ProductCardBase, {
+  Image: ProductCardImage,
+  Title: ProductCardTitle,
+  Price: ProductCardPrice,
+  Badge: ProductCardBadge,
+  Actions: ProductCardActions,
+})
