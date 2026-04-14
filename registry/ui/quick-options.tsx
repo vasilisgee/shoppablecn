@@ -4,6 +4,8 @@ import * as React from "react"
 import { X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
@@ -289,6 +291,89 @@ export function QuickOptions({
               value={[currentValue]}
             />
           </div>
+        )
+      }
+
+      if (variant.type === "checkbox") {
+        const selectedValue = selected[variant.id]
+        const currentValue = Array.isArray(selectedValue) ? selectedValue : []
+
+        return (
+          <div className="space-y-3">
+            {variant.options.map((option) => {
+              const isChecked = currentValue.includes(option.value)
+
+              return (
+                <label
+                  className={cn(
+                    "flex items-center gap-3 text-sm",
+                    option.disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                  )}
+                  key={option.value}
+                >
+                  <Checkbox
+                    checked={isChecked}
+                    disabled={option.disabled}
+                    onCheckedChange={(nextChecked) => {
+                      setSelected((currentSelected) => {
+                        const rawValue = currentSelected[variant.id]
+                        const activeValue = Array.isArray(rawValue)
+                          ? rawValue.filter(
+                              (value): value is string => typeof value === "string"
+                            )
+                          : []
+
+                        const nextValues = nextChecked
+                          ? [...activeValue, option.value]
+                          : activeValue.filter((value) => value !== option.value)
+
+                        return {
+                          ...currentSelected,
+                          [variant.id]: nextValues,
+                        }
+                      })
+                    }}
+                  />
+                  <span>{option.label}</span>
+                </label>
+              )
+            })}
+          </div>
+        )
+      }
+
+      if (variant.type === "radio") {
+        const selectedValue = selected[variant.id]
+        const currentValue =
+          typeof selectedValue === "string" ? selectedValue : undefined
+
+        return (
+          <RadioGroup
+            className="gap-3"
+            onValueChange={(value) => {
+              setSelected((currentSelected) => ({
+                ...currentSelected,
+                [variant.id]: value,
+              }))
+            }}
+            value={currentValue}
+          >
+            {variant.options.map((option) => (
+              <label
+                className={cn(
+                  "flex items-center gap-3 text-sm",
+                  option.disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                )}
+                key={option.value}
+              >
+                <RadioGroupItem
+                  disabled={option.disabled}
+                  value={option.value}
+                />
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </RadioGroup>
         )
       }
 
