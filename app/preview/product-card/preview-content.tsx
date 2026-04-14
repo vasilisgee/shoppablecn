@@ -12,7 +12,9 @@ import {
   mockProductNoCategory,
   mockProducts,
   mockProductSimple,
+  mockProductWithImages,
   mockProductWithSale,
+  mockProductWithVariants,
 } from "@/lib/mock-products"
 import { ProductCard } from "@/registry/ui/product-card"
 import type { Product, ProductCardProps } from "@/registry/ui/types"
@@ -453,6 +455,155 @@ export function ProductCardPreviewContent() {
       >
         <div className="max-w-sm">
           <ProductCard layout="vertical" product={plainProduct} variants="none" />
+        </div>
+      </PreviewExample>
+
+      <PreviewSeparator />
+
+      <PreviewExample
+        description={'layout="vertical" variants="none" product=mockProductWithImages'}
+        title={'Image slideshow / vertical / variants=none / images=3'}
+      >
+        <div className="max-w-sm">
+          <ProductCard
+            layout="vertical"
+            product={mockProductWithImages}
+            variants="none"
+          />
+        </div>
+      </PreviewExample>
+
+      <PreviewSeparator />
+
+      <PreviewExample
+        description={
+          'layout="horizontal-detailed" variants="none" product=mockProductWithImages'
+        }
+        title={'Image slideshow / horizontal-detailed / variants=none / images=3'}
+      >
+        <ProductCard
+          layout="horizontal-detailed"
+          product={mockProductWithImages}
+          variants="none"
+        />
+      </PreviewExample>
+
+      <PreviewSeparator />
+
+      <PreviewExample
+        description={'layout="vertical" variants="none" product=mockProductSimple'}
+        title={'Image slideshow / vertical / variants=none / singleImage=true'}
+      >
+        <div className="max-w-sm">
+          <ProductCard
+            layout="vertical"
+            product={mockProductSimple}
+            variants="none"
+          />
+        </div>
+      </PreviewExample>
+
+      <PreviewSeparator />
+
+      <PreviewExample
+        description={
+          'layout="vertical" variants="none" product=mockProductWithImages onAddToCart=(args)=>console.log(args)'
+        }
+        title={'Image slideshow / vertical / variants=none / onAddToCart=console.log'}
+      >
+        <div className="max-w-sm">
+          <ProductCard
+            layout="vertical"
+            onAddToCart={handleAddToCart}
+            product={mockProductWithImages}
+            variants="none"
+          />
+        </div>
+      </PreviewExample>
+
+      <PreviewSeparator />
+
+      <PreviewExample
+        description={
+          'layout="vertical" variants="overlay" product=mockProductWithVariants'
+        }
+        title={'Variants mode / vertical / variants=overlay / product=withVariants'}
+      >
+        <div className="max-w-sm">
+          <ProductCard
+            layout="vertical"
+            onAddToCart={handleAddToCart}
+            product={mockProductWithVariants}
+            variants="overlay"
+          />
+        </div>
+      </PreviewExample>
+
+      <PreviewSeparator />
+
+      <PreviewExample
+        description={
+          'layout="horizontal" variants="overlay" product=mockProductWithVariants'
+        }
+        title={'Variants mode / horizontal / variants=overlay / product=withVariants'}
+      >
+        <ProductCard
+          layout="horizontal"
+          onAddToCart={handleAddToCart}
+          product={mockProductWithVariants}
+          variants="overlay"
+        />
+      </PreviewExample>
+
+      <PreviewSeparator />
+
+      <PreviewExample
+        description={
+          'layout="horizontal-detailed" variants="overlay" product=mockProductWithVariants'
+        }
+        title={
+          'Variants mode / horizontal-detailed / variants=overlay / product=withVariants'
+        }
+      >
+        <ProductCard
+          layout="horizontal-detailed"
+          onAddToCart={handleAddToCart}
+          product={mockProductWithVariants}
+          variants="overlay"
+        />
+      </PreviewExample>
+
+      <PreviewSeparator />
+
+      <PreviewExample
+        description={'layout="vertical" variants="overlay" product=mockProductSimple'}
+        title={'Variants mode / vertical / variants=overlay / noVariantsFallback=true'}
+      >
+        <div className="max-w-sm">
+          <ProductCard
+            layout="vertical"
+            onAddToCart={handleAddToCart}
+            product={mockProductSimple}
+            variants="overlay"
+          />
+        </div>
+      </PreviewExample>
+
+      <PreviewSeparator />
+
+      <PreviewExample
+        description={
+          'layout="vertical" variants="overlay" product=mockProductWithVariants images=3'
+        }
+        title={'Combined / vertical / variants=overlay / images=3'}
+      >
+        <div className="max-w-sm">
+          <ProductCard
+            layout="vertical"
+            onAddToCart={handleAddToCart}
+            product={mockProductWithVariants}
+            variants="overlay"
+          />
         </div>
       </PreviewExample>
     </div>
