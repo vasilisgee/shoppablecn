@@ -55,7 +55,7 @@ export function ProductCardPreviewContent() {
 
   const linkedProduct: Product = {
     ...mockProductDetailed,
-    href: "/products/studio-overshirt",
+    href: "/products/studio-colorblock-hoodie",
   }
 
   const plainProduct: Product = {

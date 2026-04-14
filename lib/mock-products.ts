@@ -14,10 +14,10 @@ function getMockImage(index: number, alt: string) {
 }
 
 export const mockProductSimple: Product = {
-  id: "linen-carryall",
-  title: "Linen Market Carryall",
+  id: "linden-trail-cap",
+  title: "Linden Trail Cap",
   category: "Accessories",
-  image: getMockImage(0, "Linen market carryall in soft sand"),
+  image: getMockImage(0, "Linden trail cap in mustard yellow with a charcoal brim"),
   price: {
     amount: 6800,
     currency: "USD",
@@ -25,10 +25,10 @@ export const mockProductSimple: Product = {
 }
 
 export const mockProductNew: Product = {
-  id: "meridian-knit-polo",
-  title: "Meridian Knit Polo",
+  id: "meridian-resort-shirt",
+  title: "Meridian Resort Shirt",
   category: "Menswear",
-  image: getMockImage(1, "Meridian knit polo folded on a studio backdrop"),
+  image: getMockImage(1, "Meridian resort shirt with an abstract multicolor print"),
   price: {
     amount: 9200,
     currency: "USD",
@@ -44,12 +44,12 @@ export const mockProductNew: Product = {
 }
 
 export const mockProductWithSale: Product = {
-  id: "alto-leather-sneaker",
-  title: "Alto Leather Sneaker",
-  category: "Footwear",
+  id: "alto-fleece-hoodie",
+  title: "Alto Fleece Hoodie",
+  category: "Outerwear",
   description:
-    "A clean low-top sneaker with padded lining, tonal stitching, and a lightweight cupsole built for daily wear.",
-  image: getMockImage(2, "Alto leather sneaker photographed from a slight angle"),
+    "A heavyweight fleece hoodie with contrast sleeves, a roomy kangaroo pocket, and a soft brushed interior for cooler days.",
+  image: getMockImage(2, "Alto fleece hoodie in black and bright blue"),
   price: {
     amount: 11900,
     compareAt: 15900,
@@ -66,11 +66,14 @@ export const mockProductWithSale: Product = {
 }
 
 export const mockProductLongTitle: Product = {
-  id: "atelier-throw",
+  id: "atelier-field-cap",
   title:
-    "Atelier Merino Throw Blanket with Reversible Woven Check Pattern and Brushed Finish for Layered Living Spaces",
-  category: "Home",
-  image: getMockImage(0, "Atelier merino throw blanket draped over a chair"),
+    "Atelier Field Cap with Contrast Brim, Embroidered Front Logo, and Structured Crown for Everyday Wear",
+  category: "Accessories",
+  image: getMockImage(
+    0,
+    "Atelier field cap with a structured crown and contrast charcoal brim"
+  ),
   price: {
     amount: 14500,
     currency: "USD",
@@ -82,9 +85,9 @@ export const mockProductLongTitle: Product = {
 }
 
 export const mockProductNoCategory: Product = {
-  id: "cove-ceramic-diffuser",
-  title: "Cove Ceramic Diffuser",
-  image: getMockImage(1, "Cove ceramic diffuser with matte glaze finish"),
+  id: "cove-camp-shirt",
+  title: "Cove Camp Shirt",
+  image: getMockImage(1, "Cove camp shirt with oversized abstract shapes"),
   price: {
     amount: 5400,
     currency: "USD",
@@ -96,12 +99,12 @@ export const mockProductNoCategory: Product = {
 }
 
 export const mockProductDetailed: Product = {
-  id: "studio-overshirt",
-  title: "Studio Overshirt",
-  category: "Womenswear",
+  id: "studio-colorblock-hoodie",
+  title: "Studio Colorblock Hoodie",
+  category: "Outerwear",
   description:
-    "A structured overshirt in brushed cotton twill with oversized pockets, corozo buttons, and a softly tailored silhouette.",
-  image: getMockImage(2, "Studio overshirt styled on a neutral set"),
+    "A colorblocked hoodie with a structured hood, ribbed trims, and athletic paneling designed for standout casual layering.",
+  image: getMockImage(2, "Studio colorblock hoodie styled against a neutral backdrop"),
   price: {
     amount: 13200,
     compareAt: 16800,
@@ -115,7 +118,7 @@ export const mockProductDetailed: Product = {
     label: "Best Seller",
     variant: "default",
   },
-  href: "/products/studio-overshirt",
+  href: "/products/studio-colorblock-hoodie",
   variants: [
     {
       id: "color",
@@ -149,10 +152,10 @@ export const mockProductBrokenImage: Product = {
 }
 
 export const mockProductLowRating: Product = {
-  id: "atlas-running-cap",
-  title: "Atlas Running Cap",
-  category: "Accessories",
-  image: getMockImage(1, "Atlas running cap on a simple display stand"),
+  id: "atlas-print-shirt",
+  title: "Atlas Print Shirt",
+  category: "Menswear",
+  image: getMockImage(1, "Atlas print shirt with a relaxed camp collar"),
   price: {
     amount: 2800,
     currency: "USD",
