@@ -26,6 +26,11 @@ export default function PreviewIndexPage() {
             ProductCard: every layout x variant mode x prop combination
           </Link>
         </li>
+        <li>
+          <Link className="underline underline-offset-4" href="/preview/quick-options">
+            QuickOptions: all 6 variant types and validation
+          </Link>
+        </li>
       </ul>
     </main>
   )
