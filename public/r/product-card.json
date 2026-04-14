@@ -11,12 +11,17 @@
   "files": [
     {
       "path": "registry/ui/product-card.tsx",
-      "content": "export function ProductCard() {\n  return null\n}\n",
+      "content": "export function ProductCard() {\r\n  return null\r\n}\r\n",
       "type": "registry:ui"
     },
     {
       "path": "registry/ui/types.ts",
-      "content": "// Types will be defined in M2.\nexport {}\n",
+      "content": "export type Currency = \"EUR\" | \"USD\" | \"GBP\" | \"SEK\"\n\nexport type Price = {\n  /** Amount in minor units (cents). */\n  amount: number\n  currency: Currency\n  /** Optional compare-at price for strikethrough display. In minor units. */\n  compareAt?: number\n}\n\nexport type Rating = {\n  /** 0–5 inclusive. */\n  value: number\n  /** Number of reviews. */\n  count: number\n}\n\nexport type ProductBadge = {\n  label: string\n  variant?: \"default\" | \"sale\" | \"new\"\n}\n\nexport type ProductImage = {\n  src: string\n  alt: string\n}\n\nexport type VariantOption = {\n  label: string\n  value: string\n  /** CSS color value for type=\"swatch\". */\n  swatch?: string\n  disabled?: boolean\n}\n\nexport type ProductVariant = {\n  id: string\n  name: string\n  type: \"swatch\" | \"pills\" | \"select\" | \"slider\" | \"checkbox\" | \"radio\"\n  required?: boolean\n  options: VariantOption[]\n}\n\nexport type Product = {\n  id: string\n  title: string\n  description?: string\n  category?: string\n  image: ProductImage\n  price: Price\n  rating?: Rating\n  badge?: ProductBadge\n  href?: string\n  variants?: ProductVariant[]\n}\n\nexport type SelectedVariants = Record<string, string | string[] | number>\n\nexport type ProductCardLayout =\n  | \"vertical\"\n  | \"horizontal\"\n  | \"horizontal-detailed\"\nexport type ProductCardVariantsMode = \"none\" | \"inline\" | \"overlay\"\n\nexport type ProductCardProps = {\n  product: Product\n  layout?: ProductCardLayout\n  variants?: ProductCardVariantsMode\n  showWishlist?: boolean\n  showRating?: boolean\n  showQuickView?: boolean\n  onAddToCart?: (args: {\n    productId: string\n    selectedVariants?: SelectedVariants\n  }) => void\n  onWishlistToggle?: (productId: string) => void\n  onQuickView?: (productId: string) => void\n  className?: string\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "registry/ui/utils.ts",
+      "content": "import type { Price } from \"./types\"\n\n/**\n * Formats a Price object as a localized currency string.\n * Uses `en-US` locale for predictability; consumers can wrap for their own locale.\n */\nexport function formatPrice(price: Price): string {\n  return new Intl.NumberFormat(\"en-US\", {\n    style: \"currency\",\n    currency: price.currency,\n  }).format(price.amount / 100)\n}\n",
       "type": "registry:ui"
     }
   ],
