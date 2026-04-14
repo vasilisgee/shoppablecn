@@ -333,14 +333,22 @@ export function ProductCardImage({
                 aria-current={isActive ? "true" : undefined}
                 aria-label={`Go to image ${index + 1} of ${product.images.length}`}
                 className={cn(
-                  "size-2.5 rounded-full border border-background/70 bg-background/50 transition-colors",
+                  "flex size-6 items-center justify-center rounded-full transition-colors",
                   "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                  isActive ? "bg-background" : "hover:bg-background/80"
+                  isActive ? "bg-background/20" : "hover:bg-background/20"
                 )}
                 key={`${image.src}-${index}`}
                 onClick={() => goToImage(index)}
                 type="button"
-              />
+              >
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "size-2.5 rounded-full border border-background/70 bg-background/50 transition-colors",
+                    isActive ? "bg-background" : "bg-background/50"
+                  )}
+                />
+              </button>
             )
           })}
         </div>

@@ -163,6 +163,10 @@ export function QuickOptions({
       .every((variant) => hasSelection(variant, selected[variant.id]))
   }, [selected, variants])
 
+  if (!open) {
+    return null
+  }
+
   const renderVariantControl = React.useCallback(
     (variant: ProductVariant) => {
       if (variant.type === "swatch") {
