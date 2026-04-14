@@ -40,7 +40,6 @@ export function HotspotPin(props: HotspotPinProps) {
       <PopoverContent
         align="center"
         className="max-w-[90vw] w-auto p-0"
-        collisionPadding={16}
         side="top"
       >
         {children}
