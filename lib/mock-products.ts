@@ -184,6 +184,120 @@ export const mockProductLowRating: Product = {
   },
 }
 
+export const mockProductWithImages: Product = {
+  id: "capsule-weekend-set",
+  title: "Capsule Weekend Set",
+  category: "Bundles",
+  images: [
+    getMockImage(0, "Capsule Weekend Set including a mustard cap with a charcoal brim"),
+    getMockImage(1, "Capsule Weekend Set including an abstract-print resort shirt"),
+    getMockImage(2, "Capsule Weekend Set including a bright blue and black hoodie"),
+  ],
+  price: {
+    amount: 14900,
+    currency: "USD",
+  },
+  rating: {
+    value: 4.2,
+    count: 56,
+  },
+}
+
+export const mockProductWithVariants: Product = {
+  id: "custom-weekend-bundle",
+  title: "Custom Weekend Bundle",
+  category: "Bundles",
+  description:
+    "A build-your-own weekend bundle pairing a cap, a printed shirt, and a heavyweight hoodie with customizable styling options.",
+  images: [
+    getMockImage(0, "Custom Weekend Bundle cap view with a mustard crown and charcoal brim"),
+    getMockImage(1, "Custom Weekend Bundle shirt view with an oversized abstract print"),
+    getMockImage(2, "Custom Weekend Bundle hoodie view with bright blue sleeves"),
+  ],
+  price: {
+    amount: 18900,
+    compareAt: 22900,
+    currency: "USD",
+  },
+  rating: {
+    value: 4.7,
+    count: 214,
+  },
+  badge: {
+    label: "Sale",
+    variant: "sale",
+  },
+  variants: [
+    {
+      id: "colorway",
+      name: "Colorway",
+      type: "swatch",
+      required: true,
+      options: [
+        { label: "Sunset", value: "sunset", swatch: "#f59e0b" },
+        { label: "Oat", value: "oat", swatch: "#e7e2d9" },
+        { label: "Forest", value: "forest", swatch: "#355e3b" },
+        { label: "Night", value: "night", swatch: "#172554" },
+      ],
+    },
+    {
+      id: "size",
+      name: "Size",
+      type: "pills",
+      required: true,
+      options: [
+        { label: "S", value: "s" },
+        { label: "M", value: "m" },
+        { label: "L", value: "l" },
+        { label: "XL", value: "xl", disabled: true },
+      ],
+    },
+    {
+      id: "shirt-fit",
+      name: "Shirt fit",
+      type: "select",
+      options: [
+        { label: "Regular", value: "regular" },
+        { label: "Relaxed", value: "relaxed" },
+        { label: "Oversized", value: "oversized" },
+      ],
+    },
+    {
+      id: "embroidery-width",
+      name: "Embroidery width",
+      type: "slider",
+      sliderConfig: {
+        min: 6,
+        max: 14,
+        step: 1,
+        unit: "cm",
+      },
+      options: [],
+    },
+    {
+      id: "extras",
+      name: "Add-ons",
+      type: "checkbox",
+      options: [
+        { label: "Gift wrap", value: "gift-wrap" },
+        { label: "Spare drawcord", value: "spare-drawcord" },
+        { label: "Dust bag", value: "dust-bag" },
+      ],
+    },
+    {
+      id: "hoodie-weight",
+      name: "Hoodie weight",
+      type: "radio",
+      required: true,
+      options: [
+        { label: "Midweight", value: "midweight" },
+        { label: "Heavyweight", value: "heavyweight" },
+        { label: "Brushed fleece", value: "brushed-fleece" },
+      ],
+    },
+  ],
+}
+
 export const mockProducts: Product[] = [
   mockProductNew,
   mockProductWithSale,
