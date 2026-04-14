@@ -41,11 +41,13 @@
       "name": "hotspot-image",
       "type": "registry:ui",
       "title": "Hotspot Image",
-      "description": "Image container with positioned hotspot pins for shoppable or marketing scenes.",
-      "registryDependencies": ["popover", "sheet"],
+      "description": "Image container with positioned hotspot pins. Supports product cards, tooltips, or custom content inside each pin's popover.",
+      "registryDependencies": ["popover"],
       "files": [
         { "path": "registry/ui/hotspot-image.tsx", "type": "registry:ui" },
         { "path": "registry/ui/hotspot-pin.tsx", "type": "registry:ui" },
+        { "path": "registry/ui/hotspot-tooltip.tsx", "type": "registry:ui" },
+        { "path": "registry/ui/hotspot-link.tsx", "type": "registry:ui" },
         { "path": "registry/ui/types.ts", "type": "registry:ui" },
         { "path": "registry/ui/utils.ts", "type": "registry:ui" }
       ]
