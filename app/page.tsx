@@ -1,17 +1,11 @@
 import Link from "next/link"
 
 import { buttonVariants } from "@/components/ui/button"
-import {
-  mockProductSimple,
-  mockProductWithSale,
-  mockProductWithVariants,
-} from "@/lib/mock-products"
-import { ProductCard } from "@/registry/ui/product-card"
 
 export default function Home() {
   return (
     <main className="px-6 py-16">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-16">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
         <section className="flex w-full max-w-3xl flex-col gap-8">
           <div className="space-y-4">
             <p className="text-sm font-medium text-muted-foreground">Registry</p>
@@ -47,46 +41,6 @@ export default function Home() {
               GitHub
             </Link>
           </div>
-        </section>
-
-        <section className="space-y-6">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight">Preview</h2>
-            <p className="max-w-2xl text-muted-foreground">
-              A small slice of the ProductCard registry item showing the M3
-              slideshow and Quick Buy overlay on top of the default shadcn
-              theme tokens.
-            </p>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            <ProductCard
-              layout="vertical"
-              product={mockProductWithSale}
-              variants="none"
-            />
-            <ProductCard
-              layout="vertical"
-              product={mockProductWithVariants}
-              variants="overlay"
-            />
-            <ProductCard
-              layout="vertical"
-              product={mockProductSimple}
-              variants="none"
-            />
-          </div>
-
-          <p className="text-sm text-muted-foreground">
-            See the{" "}
-            <Link
-              className="underline underline-offset-4"
-              href="https://docs.shoppablecn.dev"
-            >
-              full documentation
-            </Link>{" "}
-            for all layouts, variants, and examples.
-          </p>
         </section>
 
         <footer className="text-sm text-muted-foreground">
