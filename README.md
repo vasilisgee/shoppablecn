@@ -8,19 +8,19 @@ E-commerce UI primitives for [shadcn/ui](https://ui.shadcn.com). Product cards, 
 
 ## Installation
 
-Components install via the shadcn CLI:
+Install components with the shadcn CLI:
 
 ```bash
 npx shadcn@latest add https://shoppablecn.dev/r/product-card.json
 ```
 
-Available components:
+```bash
+npx shadcn@latest add https://shoppablecn.dev/r/quick-options.json
+```
 
-- `product-card` — Configurable product card with layouts and variant modes
-- `quick-options` — Slide-up overlay for variant selection
-- `hotspot-image` — Shoppable image with positioned hotspot pins
-
-See the [docs](https://docs.shoppablecn.dev) for full usage examples.
+```bash
+npx shadcn@latest add https://shoppablecn.dev/r/hotspot-image.json
+```
 
 ## License
 
