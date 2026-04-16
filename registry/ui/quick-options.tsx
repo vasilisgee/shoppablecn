@@ -374,7 +374,7 @@ export function QuickOptions({
       if (variant.type === "radio") {
         const selectedValue = selected[variant.id]
         const currentValue =
-          typeof selectedValue === "string" ? selectedValue : undefined
+          typeof selectedValue === "string" ? selectedValue : ""
 
         return (
           <RadioGroup
