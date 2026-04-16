@@ -312,19 +312,19 @@ export function ProductCardImage({
       {showArrowControls ? (
         <Button
           aria-label="Previous image"
-          className="absolute top-1/2 left-3 z-10 -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90"
+          className="absolute top-1/2 left-3 z-10 -translate-y-1/2 cursor-pointer rounded-full border-white/20 bg-black/55 text-white shadow-sm backdrop-blur-sm hover:bg-black/65 hover:text-white active:translate-y-0"
           disabled={currentIndex === 0}
           onClick={() => goToImage(Math.max(0, currentIndex - 1))}
           size="icon-sm"
           type="button"
-          variant="outline"
+          variant="ghost"
         >
           <ChevronLeft aria-hidden="true" />
         </Button>
       ) : null}
 
       {showDotControls ? (
-        <div className="absolute right-1/2 bottom-3 z-10 flex translate-x-1/2 items-center gap-2">
+        <div className="absolute right-1/2 bottom-3 z-10 flex translate-x-1/2 items-center gap-1 rounded-full border border-white/20 bg-black/55 px-1.5 py-0.5 shadow-sm backdrop-blur-sm">
           {product.images.map((image, index) => {
             const isActive = index === currentIndex
 
@@ -333,9 +333,9 @@ export function ProductCardImage({
                 aria-current={isActive ? "true" : undefined}
                 aria-label={`Go to image ${index + 1} of ${product.images.length}`}
                 className={cn(
-                  "flex size-6 items-center justify-center rounded-full transition-colors",
+                  "flex size-3.5 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-white/10",
                   "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                  isActive ? "bg-background/20" : "hover:bg-background/20"
+                  isActive && "bg-white/10"
                 )}
                 key={`${image.src}-${index}`}
                 onClick={() => goToImage(index)}
@@ -344,8 +344,8 @@ export function ProductCardImage({
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "size-2.5 rounded-full border border-background/70 bg-background/50 transition-colors",
-                    isActive ? "bg-background" : "bg-background/50"
+                    "size-1.5 rounded-full bg-white/65 transition-colors",
+                    isActive ? "bg-white" : "bg-white/65"
                   )}
                 />
               </button>
@@ -357,14 +357,14 @@ export function ProductCardImage({
       {showArrowControls ? (
         <Button
           aria-label="Next image"
-          className="absolute top-1/2 right-3 z-10 -translate-y-1/2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90"
+          className="absolute top-1/2 right-3 z-10 -translate-y-1/2 cursor-pointer rounded-full border-white/20 bg-black/55 text-white shadow-sm backdrop-blur-sm hover:bg-black/65 hover:text-white active:translate-y-0"
           disabled={currentIndex === product.images.length - 1}
           onClick={() =>
             goToImage(Math.min(product.images.length - 1, currentIndex + 1))
           }
           size="icon-sm"
           type="button"
-          variant="outline"
+          variant="ghost"
         >
           <ChevronRight aria-hidden="true" />
         </Button>

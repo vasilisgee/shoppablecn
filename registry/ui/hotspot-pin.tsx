@@ -11,8 +11,9 @@ const pinBaseClasses =
   "absolute inline-flex items-center justify-center rounded-full shadow-sm transition-[background-color,box-shadow,filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none"
 
 const pinVariantClasses = {
-  plus: "size-8 border border-border bg-background text-foreground hover:bg-accent",
-  dot: "size-4 border border-background/80 bg-primary text-primary-foreground",
+  plus:
+    "size-8 border-[3px] border-black/70 bg-background text-foreground hover:bg-accent dark:border-white/70",
+  dot: "size-5 rounded-full border-[3px] border-background/80 bg-primary text-primary-foreground",
 } satisfies Record<NonNullable<HotspotPinProps["variant"]>, string>
 
 export function HotspotPin(props: HotspotPinProps) {
@@ -39,7 +40,7 @@ export function HotspotPin(props: HotspotPinProps) {
       </PopoverTrigger>
       <PopoverContent
         align="center"
-        className="max-w-[90vw] w-auto p-0"
+        className="max-w-[90vw] w-auto p-0 has-[[data-slot=card]]:overflow-hidden has-[[data-slot=card]]:rounded-xl has-[[data-slot=card]]:bg-transparent"
         side="top"
       >
         {children}
