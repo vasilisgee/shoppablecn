@@ -1,26 +1,60 @@
-# shoppablecn
+# shoppablecn — Ecommerce UI Components
 
-E-commerce UI primitives for [shadcn/ui](https://ui.shadcn.com). Product cards, hotspot images, and quick-buy overlays.
+A set of ecommerce-focused UI components built [shadcn/ui](https://ui.shadcn.com), designed for modern React and Next.js applications.
 
 **[Documentation →](https://docs.shoppablecn.dev)**
 
-> Work in progress.
+---
+
+## Features
+
+- Built on shadcn/ui primitives  
+- CLI-based component integration  
+- Fully responsive  
+- Accessibility-ready  
+- Easy to customize with Tailwind CSS  
+- Focused on real ecommerce interactions  
+
+---
+
+## Tech Stack
+
+- React 19
+- Next.js 16
+- Tailwind CSS  
+- shadcn/ui  
+- TypeScript  
+
+---
+
+## Components
+
+- Product Card  
+- Quick Options  
+- Hotspot  
+
+---
 
 ## Installation
 
-Components install via the shadcn CLI:
-
 ```bash
-npx shadcn@latest add https://shoppablecn.dev/r/product-card.json
+git clone https://github.com/vasilisgee/shoppablecn.git
+cd shoppablecn
+npm install
+npm run dev
 ```
 
-Available components:
+---
 
-- `product-card` — Configurable product card with layouts and variant modes
-- `quick-options` — Slide-up overlay for variant selection
-- `hotspot-image` — Shoppable image with positioned hotspot pins
+## Usage
 
-See the [docs](https://docs.shoppablecn.dev) for full usage examples.
+Components can be added to your project via CLI, with full examples available in the documentation.
+
+The repository also serves as a full reference implementation and source code.
+
+https://docs.shoppablecn.dev/docs
+
+---
 
 ## License
 
