@@ -8,7 +8,7 @@
 
 <img src="https://github.com/vasilisgee/shoppablecn-docs/blob/main/public/img/og_image.jpg" style="max-width: 100%;">
 
-A set of ecommerce-focused UI components built with [shadcn/ui](https://ui.shadcn.com), designed for ecommerce React and Next.js applications.
+A set of ecommerce UI components built with [shadcn/ui](https://ui.shadcn.com) for React and Next.js applications.
 
 📚 [View Documentation](https://docs.shoppablecn.dev)
 
