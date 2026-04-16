@@ -218,7 +218,7 @@ export function QuickOptions({
         return (
           <ToggleGroup
             aria-label={variant.name}
-            className="w-full flex-wrap"
+            className="w-full flex-wrap justify-start"
             multiple={false}
             onValueChange={(value) => {
               setSelected((currentSelected) => ({
@@ -227,12 +227,15 @@ export function QuickOptions({
               }))
             }}
             role="toolbar"
+            spacing={2}
             value={currentValue ? [currentValue] : []}
           >
             {variant.options.map((option) => (
               <ToggleGroupItem
+                className="rounded-full"
                 disabled={option.disabled}
                 key={option.value}
+                variant="outline"
                 value={option.value}
               >
                 {option.label}
