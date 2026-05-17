@@ -163,258 +163,255 @@ export function QuickOptions({
       .every((variant) => hasSelection(variant, selected[variant.id]))
   }, [selected, variants])
 
-  const renderVariantControl = React.useCallback(
-    (variant: ProductVariant, labelId: string) => {
-      if (variant.type === "swatch") {
-        const currentValue =
-          typeof selected[variant.id] === "string"
-            ? selected[variant.id]
-            : undefined
+  function renderVariantControl(variant: ProductVariant, labelId: string) {
+    if (variant.type === "swatch") {
+      const currentValue =
+        typeof selected[variant.id] === "string"
+          ? selected[variant.id]
+          : undefined
 
-        return (
-          <div className="flex flex-wrap gap-3">
-            {variant.options.map((option) => {
-              const isSelected = currentValue === option.value
+      return (
+        <div className="flex flex-wrap gap-3">
+          {variant.options.map((option) => {
+            const isSelected = currentValue === option.value
 
-              return (
-                <button
-                  aria-disabled={option.disabled ? "true" : undefined}
-                  aria-label={`${variant.name}: ${option.label}`}
-                  aria-pressed={isSelected}
-                  className={cn(
-                    "size-8 rounded-full border border-border transition-shadow outline-none",
-                    "focus-visible:ring-3 focus-visible:ring-ring/50",
-                    isSelected ? "ring-2 ring-ring ring-offset-2" : undefined,
-                    option.disabled
-                      ? "cursor-not-allowed opacity-40"
-                      : "cursor-pointer"
-                  )}
-                  disabled={option.disabled}
-                  key={option.value}
-                  onClick={() => {
-                    setSelected((currentSelected) => ({
-                      ...currentSelected,
-                      [variant.id]: option.value,
-                    }))
-                  }}
-                  style={{
-                    backgroundColor: option.swatch ?? "transparent",
-                  }}
-                  type="button"
-                >
-                  <span className="sr-only">{option.label}</span>
-                </button>
-              )
-            })}
-          </div>
-        )
-      }
-
-      if (variant.type === "pills") {
-        const selectedValue = selected[variant.id]
-        const currentValue =
-          typeof selectedValue === "string" ? selectedValue : undefined
-
-        return (
-          <ToggleGroup
-            aria-label={variant.name}
-            className="w-full flex-wrap justify-start"
-            multiple={false}
-            onValueChange={(value) => {
-              setSelected((currentSelected) => ({
-                ...currentSelected,
-                [variant.id]: value[0] ?? "",
-              }))
-            }}
-            role="toolbar"
-            spacing={2}
-            value={currentValue ? [currentValue] : []}
-          >
-            {variant.options.map((option) => (
-              <ToggleGroupItem
-                className="rounded-full"
+            return (
+              <button
+                aria-disabled={option.disabled ? "true" : undefined}
+                aria-label={`${variant.name}: ${option.label}`}
+                aria-pressed={isSelected}
+                className={cn(
+                  "size-8 rounded-full border border-border transition-shadow outline-none",
+                  "focus-visible:ring-3 focus-visible:ring-ring/50",
+                  isSelected ? "ring-2 ring-ring ring-offset-2" : undefined,
+                  option.disabled
+                    ? "cursor-not-allowed opacity-40"
+                    : "cursor-pointer"
+                )}
                 disabled={option.disabled}
                 key={option.value}
-                variant="outline"
+                onClick={() => {
+                  setSelected((currentSelected) => ({
+                    ...currentSelected,
+                    [variant.id]: option.value,
+                  }))
+                }}
+                style={{
+                  backgroundColor: option.swatch ?? "transparent",
+                }}
+                type="button"
+              >
+                <span className="sr-only">{option.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      )
+    }
+
+    if (variant.type === "pills") {
+      const selectedValue = selected[variant.id]
+      const currentValue =
+        typeof selectedValue === "string" ? selectedValue : undefined
+
+      return (
+        <ToggleGroup
+          aria-label={variant.name}
+          className="w-full flex-wrap justify-start"
+          multiple={false}
+          onValueChange={(value) => {
+            setSelected((currentSelected) => ({
+              ...currentSelected,
+              [variant.id]: value[0] ?? "",
+            }))
+          }}
+          role="toolbar"
+          spacing={2}
+          value={currentValue ? [currentValue] : []}
+        >
+          {variant.options.map((option) => (
+            <ToggleGroupItem
+              className="rounded-full"
+              disabled={option.disabled}
+              key={option.value}
+              variant="outline"
+              value={option.value}
+            >
+              {option.label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      )
+    }
+
+    if (variant.type === "select") {
+      const selectedValue = selected[variant.id]
+      const currentValue =
+        typeof selectedValue === "string" ? selectedValue : null
+
+      return (
+        <Select
+          onValueChange={(value) => {
+            setSelected((currentSelected) => ({
+              ...currentSelected,
+              [variant.id]: value ?? "",
+            }))
+          }}
+          value={currentValue}
+        >
+          <SelectTrigger
+            aria-labelledby={labelId}
+            aria-label={variant.name}
+            className="w-full"
+          >
+            <SelectValue placeholder={`Choose ${variant.name.toLowerCase()}`} />
+          </SelectTrigger>
+          <SelectContent>
+            {variant.options.map((option) => (
+              <SelectItem
+                disabled={option.disabled}
+                key={option.value}
                 value={option.value}
               >
                 {option.label}
-              </ToggleGroupItem>
+              </SelectItem>
             ))}
-          </ToggleGroup>
+          </SelectContent>
+        </Select>
+      )
+    }
+
+    if (variant.type === "slider") {
+      if (!variant.sliderConfig) {
+        return (
+          <p className="text-xs text-muted-foreground">
+            Slider configuration is missing.
+          </p>
         )
       }
 
-      if (variant.type === "select") {
-        const selectedValue = selected[variant.id]
-        const currentValue =
-          typeof selectedValue === "string" ? selectedValue : null
+      const selectedValue = selected[variant.id]
+      const currentValue =
+        typeof selectedValue === "number"
+          ? selectedValue
+          : variant.sliderConfig.min
 
-        return (
-          <Select
+      return (
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            {currentValue}
+            {variant.sliderConfig.unit ? ` ${variant.sliderConfig.unit}` : ""}
+          </p>
+          <Slider
+            aria-labelledby={labelId}
+            aria-label={variant.name}
+            defaultValue={[variant.sliderConfig.min]}
+            max={variant.sliderConfig.max}
+            min={variant.sliderConfig.min}
             onValueChange={(value) => {
+              const nextValue = Array.isArray(value) ? value[0] : value
+
               setSelected((currentSelected) => ({
                 ...currentSelected,
-                [variant.id]: value ?? "",
+                [variant.id]: nextValue,
               }))
             }}
-            value={currentValue}
-          >
-            <SelectTrigger
-              aria-labelledby={labelId}
-              aria-label={variant.name}
-              className="w-full"
-            >
-              <SelectValue
-                placeholder={`Choose ${variant.name.toLowerCase()}`}
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {variant.options.map((option) => (
-                <SelectItem
-                  disabled={option.disabled}
-                  key={option.value}
-                  value={option.value}
-                >
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )
-      }
+            step={variant.sliderConfig.step}
+            value={[currentValue]}
+          />
+        </div>
+      )
+    }
 
-      if (variant.type === "slider") {
-        if (!variant.sliderConfig) {
-          return (
-            <p className="text-xs text-muted-foreground">
-              Slider configuration is missing.
-            </p>
-          )
-        }
+    if (variant.type === "checkbox") {
+      const selectedValue = selected[variant.id]
+      const currentValue = Array.isArray(selectedValue) ? selectedValue : []
 
-        const selectedValue = selected[variant.id]
-        const currentValue =
-          typeof selectedValue === "number"
-            ? selectedValue
-            : variant.sliderConfig.min
+      return (
+        <div className="space-y-3">
+          {variant.options.map((option) => {
+            const isChecked = currentValue.includes(option.value)
 
-        return (
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              {currentValue}
-              {variant.sliderConfig.unit ? ` ${variant.sliderConfig.unit}` : ""}
-            </p>
-            <Slider
-              aria-labelledby={labelId}
-              aria-label={variant.name}
-              defaultValue={[variant.sliderConfig.min]}
-              max={variant.sliderConfig.max}
-              min={variant.sliderConfig.min}
-              onValueChange={(value) => {
-                const nextValue = Array.isArray(value) ? value[0] : value
-
-                setSelected((currentSelected) => ({
-                  ...currentSelected,
-                  [variant.id]: nextValue,
-                }))
-              }}
-              step={variant.sliderConfig.step}
-              value={[currentValue]}
-            />
-          </div>
-        )
-      }
-
-      if (variant.type === "checkbox") {
-        const selectedValue = selected[variant.id]
-        const currentValue = Array.isArray(selectedValue) ? selectedValue : []
-
-        return (
-          <div className="space-y-3">
-            {variant.options.map((option) => {
-              const isChecked = currentValue.includes(option.value)
-
-              return (
-                <label
-                  className={cn(
-                    "flex items-center gap-3 text-sm",
-                    option.disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-                  )}
-                  key={option.value}
-                >
-                  <Checkbox
-                    checked={isChecked}
-                    disabled={option.disabled}
-                    onCheckedChange={(nextChecked) => {
-                      setSelected((currentSelected) => {
-                        const rawValue = currentSelected[variant.id]
-                        const activeValue = Array.isArray(rawValue)
-                          ? rawValue.filter(
-                              (value): value is string => typeof value === "string"
-                            )
-                          : []
-
-                        const nextValues = nextChecked
-                          ? [...activeValue, option.value]
-                          : activeValue.filter((value) => value !== option.value)
-
-                        return {
-                          ...currentSelected,
-                          [variant.id]: nextValues,
-                        }
-                      })
-                    }}
-                  />
-                  <span>{option.label}</span>
-                </label>
-              )
-            })}
-          </div>
-        )
-      }
-
-      if (variant.type === "radio") {
-        const selectedValue = selected[variant.id]
-        const currentValue =
-          typeof selectedValue === "string" ? selectedValue : ""
-
-        return (
-          <RadioGroup
-            className="gap-3"
-            onValueChange={(value) => {
-              setSelected((currentSelected) => ({
-                ...currentSelected,
-                [variant.id]: value,
-              }))
-            }}
-            value={currentValue}
-          >
-            {variant.options.map((option) => (
+            return (
               <label
                 className={cn(
                   "flex items-center gap-3 text-sm",
-                  option.disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                  option.disabled
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer"
                 )}
                 key={option.value}
               >
-                <RadioGroupItem
+                <Checkbox
+                  checked={isChecked}
                   disabled={option.disabled}
-                  value={option.value}
+                  onCheckedChange={(nextChecked) => {
+                    setSelected((currentSelected) => {
+                      const rawValue = currentSelected[variant.id]
+                      const activeValue = Array.isArray(rawValue)
+                        ? rawValue.filter(
+                            (value): value is string =>
+                              typeof value === "string"
+                          )
+                        : []
+
+                      const nextValues = nextChecked
+                        ? [...activeValue, option.value]
+                        : activeValue.filter((value) => value !== option.value)
+
+                      return {
+                        ...currentSelected,
+                        [variant.id]: nextValues,
+                      }
+                    })
+                  }}
                 />
                 <span>{option.label}</span>
               </label>
-            ))}
-          </RadioGroup>
-        )
-      }
+            )
+          })}
+        </div>
+      )
+    }
+
+    if (variant.type === "radio") {
+      const selectedValue = selected[variant.id]
+      const currentValue =
+        typeof selectedValue === "string" ? selectedValue : ""
 
       return (
-        <p className="text-xs text-muted-foreground">{variant.type} options</p>
+        <RadioGroup
+          className="gap-3"
+          onValueChange={(value) => {
+            setSelected((currentSelected) => ({
+              ...currentSelected,
+              [variant.id]: value,
+            }))
+          }}
+          value={currentValue}
+        >
+          {variant.options.map((option) => (
+            <label
+              className={cn(
+                "flex items-center gap-3 text-sm",
+                option.disabled
+                  ? "cursor-not-allowed opacity-50"
+                  : "cursor-pointer"
+              )}
+              key={option.value}
+            >
+              <RadioGroupItem disabled={option.disabled} value={option.value} />
+              <span>{option.label}</span>
+            </label>
+          ))}
+        </RadioGroup>
       )
-    },
-    [selected]
-  )
+    }
+
+    return (
+      <p className="text-xs text-muted-foreground">{variant.type} options</p>
+    )
+  }
 
   if (!open) {
     return null
@@ -424,7 +421,6 @@ export function QuickOptions({
     <div
       ref={containerRef}
       aria-label="Quick options"
-      aria-modal="true"
       className={cn("absolute inset-0 z-20 flex flex-col bg-background", className)}
       onKeyDown={handleKeyDown}
       role="dialog"
