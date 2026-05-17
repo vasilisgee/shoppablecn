@@ -116,7 +116,7 @@ function Stars({ value, count }: StarsProps) {
           )
 
           return (
-            <span className="relative inline-flex" key={`${index}-${count}`}>
+            <span className="relative inline-flex" key={index}>
               <Star className="size-4 text-muted-foreground/40" />
               <span
                 className="absolute inset-y-0 left-0 overflow-hidden"
@@ -300,19 +300,18 @@ export function ProductCardImage({
       aria-roledescription="carousel"
       className={cn(
         containerClasses,
-        !product.href &&
-          "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       )}
       onKeyDown={handleCarouselKeyDown}
       role="region"
-      tabIndex={!product.href ? 0 : undefined}
+      tabIndex={0}
     >
       {mediaContent}
 
       {showArrowControls ? (
         <Button
           aria-label="Previous image"
-          className="absolute top-1/2 left-3 z-10 -translate-y-1/2 cursor-pointer rounded-full border-white/20 bg-black/55 text-white shadow-sm backdrop-blur-sm hover:bg-black/65 hover:text-white active:translate-y-0"
+          className="absolute top-1/2 left-3 z-10 -translate-y-1/2 cursor-pointer rounded-full border-white/20 bg-black/55 text-white shadow-sm backdrop-blur-sm hover:bg-black/65 hover:text-white active:not-aria-[haspopup]:-translate-y-1/2"
           disabled={currentIndex === 0}
           onClick={() => goToImage(Math.max(0, currentIndex - 1))}
           size="icon-sm"
@@ -357,7 +356,7 @@ export function ProductCardImage({
       {showArrowControls ? (
         <Button
           aria-label="Next image"
-          className="absolute top-1/2 right-3 z-10 -translate-y-1/2 cursor-pointer rounded-full border-white/20 bg-black/55 text-white shadow-sm backdrop-blur-sm hover:bg-black/65 hover:text-white active:translate-y-0"
+          className="absolute top-1/2 right-3 z-10 -translate-y-1/2 cursor-pointer rounded-full border-white/20 bg-black/55 text-white shadow-sm backdrop-blur-sm hover:bg-black/65 hover:text-white active:not-aria-[haspopup]:-translate-y-1/2"
           disabled={currentIndex === product.images.length - 1}
           onClick={() =>
             goToImage(Math.min(product.images.length - 1, currentIndex + 1))
@@ -490,6 +489,7 @@ function ProductCardBase({
   variants = "none",
   slideshowControls = "both",
   showWishlist = false,
+  isWishlisted,
   showRating = true,
   showQuickView = false,
   onAddToCart,
@@ -532,15 +532,23 @@ function ProductCardBase({
             <ProductCardTitle layout={layout} product={product} />
             {showWishlist ? (
               <Button
-                aria-label="Add to wishlist"
-                aria-pressed={false}
-                className="absolute top-3 right-3"
+                aria-label={
+                  isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+                }
+                aria-pressed={isWishlisted ?? false}
+                className={cn(
+                  "absolute top-3 right-3",
+                  isWishlisted && "bg-accent text-accent-foreground"
+                )}
                 onClick={() => onWishlistToggle?.(product.id)}
                 size="icon"
                 type="button"
                 variant="outline"
               >
-                <Heart aria-hidden="true" />
+                <Heart
+                  aria-hidden="true"
+                  className={isWishlisted ? "fill-current" : undefined}
+                />
               </Button>
             ) : null}
             {showRating && product.rating ? (

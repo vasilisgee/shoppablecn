@@ -78,7 +78,7 @@ export type ProductCardLayout =
   | "vertical"
   | "horizontal"
   | "horizontal-detailed"
-export type ProductCardVariantsMode = "none" | "inline" | "overlay"
+export type ProductCardVariantsMode = "none" | "overlay"
 
 export type ProductCardProps = {
   product: Product
@@ -87,6 +87,8 @@ export type ProductCardProps = {
   /** Which slideshow navigation controls to render when product has multiple images. Default: "both". */
   slideshowControls?: "arrows" | "dots" | "both" | "none"
   showWishlist?: boolean
+  /** Whether the wishlist button is currently pressed. Default: false. */
+  isWishlisted?: boolean
   showRating?: boolean
   showQuickView?: boolean
   onAddToCart?: (args: {
