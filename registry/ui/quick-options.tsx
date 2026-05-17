@@ -421,11 +421,15 @@ export function QuickOptions({
     <div
       ref={containerRef}
       aria-label="Quick options"
-      className={cn("absolute inset-0 z-20 flex flex-col bg-background", className)}
+      className={cn(
+        "absolute inset-0 z-20 flex flex-col bg-background",
+        "animate-in fade-in-0 slide-in-from-bottom-2 duration-400 ease-out motion-reduce:animate-none",
+        className
+      )}
       onKeyDown={handleKeyDown}
       role="dialog"
     >
-      <div className="flex items-center justify-between border-b px-4 py-3">
+      <div className="relative border-b px-4 py-3 pr-14">
         <div className="space-y-1">
           <h2 className="text-base font-semibold tracking-tight">Options</h2>
           <p className="text-sm text-muted-foreground">
@@ -434,6 +438,7 @@ export function QuickOptions({
         </div>
         <Button
           aria-label="Close options"
+          className="absolute top-3 right-3"
           onClick={closeOverlay}
           ref={closeButtonRef}
           size="icon"
