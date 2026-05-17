@@ -1,0 +1,1456 @@
+# shoppablecn — Full Source
+
+> Complete source of all shoppablecn registry components. For the condensed API reference see: https://shoppablecn.dev/llms.txt
+
+## registry/ui/types.ts
+
+```ts
+import type * as React from "react"
+
+export type Currency = "EUR" | "USD" | "GBP" | "SEK"
+
+export type Price = {
+  /** Amount in minor units (cents). */
+  amount: number
+  currency: Currency
+  /** Optional compare-at price for strikethrough display. In minor units. */
+  compareAt?: number
+}
+
+export type Rating = {
+  /** 0–5 inclusive. */
+  value: number
+  /** Number of reviews. */
+  count: number
+}
+
+export type ProductBadge = {
+  label: string
+  variant?: "default" | "sale" | "new"
+}
+
+export type ProductImage = {
+  src: string
+  alt: string
+}
+
+export type VariantOption = {
+  /** Display label (e.g., "Cream", "Medium"). */
+  label: string
+  /** Machine value (e.g., "cream", "m"). */
+  value: string
+  /** CSS color value for type="swatch" (e.g., "#f5f0e8", "oklch(...)"). */
+  swatch?: string
+  /** If true, option renders but is not selectable. */
+  disabled?: boolean
+}
+
+export type ProductVariant = {
+  /** Unique identifier used as the key in SelectedVariants. */
+  id: string
+  /** Display label (e.g., "Color", "Size"). */
+  name: string
+  /** Input type for rendering. */
+  type: "swatch" | "pills" | "select" | "slider" | "checkbox" | "radio"
+  /** If true, user must select a value before Add to Cart is enabled. Default: false. */
+  required?: boolean
+  /** Option list. For type="slider", this is unused. */
+  options: VariantOption[]
+  /** Optional config specific to type="slider". */
+  sliderConfig?: {
+    min: number
+    max: number
+    step: number
+    unit?: string
+  }
+}
+
+export type Product = {
+  id: string
+  title: string
+  description?: string
+  category?: string
+  /** Array of product images. Must contain at least one entry. First image is the default. */
+  images: ProductImage[]
+  price: Price
+  rating?: Rating
+  badge?: ProductBadge
+  href?: string
+  variants?: ProductVariant[]
+}
+
+export type SelectedVariants = Record<string, string | string[] | number>
+
+export type ProductCardLayout =
+  | "vertical"
+  | "horizontal"
+  | "horizontal-detailed"
+export type ProductCardVariantsMode = "none" | "overlay"
+
+export type ProductCardProps = {
+  product: Product
+  layout?: ProductCardLayout
+  variants?: ProductCardVariantsMode
+  /** Which slideshow navigation controls to render when product has multiple images. Default: "both". */
+  slideshowControls?: "arrows" | "dots" | "both" | "none"
+  showWishlist?: boolean
+  /** Whether the wishlist button is currently pressed. Default: false. */
+  isWishlisted?: boolean
+  showRating?: boolean
+  showQuickView?: boolean
+  onAddToCart?: (args: {
+    productId: string
+    selectedVariants?: SelectedVariants
+  }) => void
+  onWishlistToggle?: (productId: string) => void
+  onQuickView?: (productId: string) => void
+  className?: string
+}
+
+export type HotspotPinVariant = "plus" | "dot"
+
+export type HotspotImageProps = {
+  /** Image source. */
+  src: string
+  /** Image alt text. Required for accessibility. */
+  alt: string
+  /** Natural width in pixels. Required — matches next/image API. */
+  width: number
+  /** Natural height in pixels. Required — matches next/image API. */
+  height: number
+  /** HotspotPin children. */
+  children: React.ReactNode
+  /** Optional className for the outer scrollable wrapper. */
+  className?: string
+}
+
+export type HotspotPinProps = {
+  /** Horizontal position as a percentage of image width (0–100). */
+  x: number
+  /** Vertical position as a percentage of image height (0–100). */
+  y: number
+  /** Visual style of the pin. Default: "plus". */
+  variant?: HotspotPinVariant
+  /** Accessible label for the pin button. Defaults to "Hotspot at X%, Y%" if not provided. */
+  label?: string
+  /** Popover content rendered when the pin is activated. */
+  children: React.ReactNode
+  /** Optional className for the pin button. */
+  className?: string
+}
+
+export type HotspotTooltipProps = {
+  /** Title displayed at top of the tooltip. */
+  title: string
+  /** Description text below the title. */
+  description: string
+  /** Optional className for the tooltip container. */
+  className?: string
+}
+
+export type HotspotLinkProps = {
+  /** Link label. */
+  label: string
+  /** Link href. */
+  href: string
+  /** Optional target (e.g., "_blank"). */
+  target?: React.HTMLAttributeAnchorTarget
+  /** Optional className for the link container. */
+  className?: string
+}
+```
+
+## registry/ui/utils.ts
+
+```ts
+import type { Price } from "./types"
+
+/**
+ * Formats a Price object as a localized currency string.
+ * Defaults to `en-US` for backwards-compatible output.
+ */
+export function formatPrice(price: Price, locale: string = "en-US"): string {
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: price.currency,
+  }).format(price.amount / 100)
+}
+```
+
+## registry/ui/product-card.tsx
+
+```ts
+"use client"
+
+import * as React from "react"
+import Image from "next/image"
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Heart,
+  ShoppingCart,
+  Star,
+} from "lucide-react"
+
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
+
+import type {
+  Price,
+  Product,
+  ProductBadge,
+  ProductCardLayout,
+  ProductCardProps,
+} from "./types"
+import { QuickOptions } from "./quick-options"
+import { formatPrice } from "./utils"
+
+const badgeVariants: Record<
+  NonNullable<ProductBadge["variant"]>,
+  React.ComponentProps<typeof Badge>["variant"]
+> = {
+  default: "secondary",
+  sale: "destructive",
+  new: "default",
+}
+
+const layoutClasses: Record<ProductCardLayout, string> = {
+  vertical: "flex-col",
+  horizontal: "grid gap-0 sm:grid-cols-[200px_1fr]",
+  "horizontal-detailed": "grid gap-0 lg:grid-cols-[300px_1fr]",
+}
+
+const imageLayoutClasses: Record<ProductCardLayout, string> = {
+  vertical: "aspect-square",
+  horizontal: "aspect-[4/3] sm:aspect-auto sm:min-h-full",
+  "horizontal-detailed": "aspect-[4/3] lg:aspect-auto lg:min-h-full",
+}
+
+const contentLayoutClasses: Record<ProductCardLayout, string> = {
+  vertical: "p-4",
+  horizontal: "p-4",
+  "horizontal-detailed": "p-5 lg:p-6",
+}
+
+type ProductCardSlideshowControls = NonNullable<
+  ProductCardProps["slideshowControls"]
+>
+
+const ProductCardSlideshowControlsContext =
+  React.createContext<ProductCardSlideshowControls>("both")
+
+function getImageSizes(layout: ProductCardLayout) {
+  return layout === "vertical"
+    ? "(min-width: 1024px) 20rem, (min-width: 768px) 33vw, 100vw"
+    : "(min-width: 1024px) 18rem, 100vw"
+}
+
+export type ProductCardImageProps = {
+  product: Product
+  layout: ProductCardLayout
+}
+
+export type ProductCardTitleProps = {
+  product: Product
+  layout: ProductCardLayout
+}
+
+export type ProductCardPriceProps = {
+  price: Price
+}
+
+export type ProductCardBadgeProps = {
+  badge: ProductBadge
+}
+
+export type ProductCardActionsProps = {
+  layout: ProductCardLayout
+  product: Product
+  showQuickView: boolean
+  onPrimaryAction: () => void
+  primaryActionLabel: string
+  primaryActionHasPopup?: "dialog"
+  primaryActionExpanded?: boolean
+  onQuickView?: ProductCardProps["onQuickView"]
+}
+
+type StarsProps = {
+  value: number
+  count: number
+}
+
+function Stars({ value, count }: StarsProps) {
+  const clampedValue = Math.max(0, Math.min(5, value))
+
+  return (
+    <div
+      aria-label={`${clampedValue} out of 5 stars, ${count} reviews`}
+      className="flex items-center gap-2 text-sm text-muted-foreground"
+    >
+      <div className="flex items-center gap-0.5" aria-hidden="true">
+        {Array.from({ length: 5 }, (_, index) => {
+          const fillPercentage = Math.max(
+            0,
+            Math.min(100, (clampedValue - index) * 100)
+          )
+
+          return (
+            <span className="relative inline-flex" key={index}>
+              <Star className="size-4 text-muted-foreground/40" />
+              <span
+                className="absolute inset-y-0 left-0 overflow-hidden"
+                style={{ width: `${fillPercentage}%` }}
+              >
+                <Star className="size-4 fill-current text-foreground" />
+              </span>
+            </span>
+          )
+        })}
+      </div>
+      <span>({count})</span>
+    </div>
+  )
+}
+
+export function ProductCardImage({
+  product,
+  layout,
+}: ProductCardImageProps) {
+  const slideshowControls = React.useContext(
+    ProductCardSlideshowControlsContext
+  )
+  const [currentIndex, setCurrentIndex] = React.useState(0)
+  const [imageErrors, setImageErrors] = React.useState<number[]>([])
+  const [loadedImageIndexes, setLoadedImageIndexes] = React.useState([0])
+  const hasMultipleImages = product.images.length > 1
+  const showArrowControls =
+    slideshowControls === "arrows" || slideshowControls === "both"
+  const showDotControls =
+    slideshowControls === "dots" || slideshowControls === "both"
+  const containerClasses = cn(
+    "relative overflow-hidden bg-muted",
+    imageLayoutClasses[layout]
+  )
+  const imageSizes = getImageSizes(layout)
+
+  React.useEffect(() => {
+    setCurrentIndex(0)
+    setImageErrors([])
+    setLoadedImageIndexes([0])
+  }, [product.id])
+
+  const handleImageError = React.useCallback((index: number) => {
+    setImageErrors((currentErrors) => {
+      if (currentErrors.includes(index)) {
+        return currentErrors
+      }
+
+      return [...currentErrors, index]
+    })
+  }, [])
+
+  const renderImageFallback = React.useCallback(
+    (alt: string) => (
+      <div
+        aria-label={`${alt} unavailable`}
+        className="flex h-full w-full items-center justify-center bg-muted px-4 text-center text-sm text-muted-foreground"
+        role="img"
+      >
+        Image unavailable
+      </div>
+    ),
+    []
+  )
+
+  const goToImage = React.useCallback((nextIndex: number) => {
+    setLoadedImageIndexes((currentIndexes) => {
+      if (currentIndexes.includes(nextIndex)) {
+        return currentIndexes
+      }
+
+      return [...currentIndexes, nextIndex]
+    })
+    setCurrentIndex(nextIndex)
+  }, [])
+
+  const handleCarouselKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === "ArrowLeft") {
+        event.preventDefault()
+        goToImage(Math.max(0, currentIndex - 1))
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault()
+        goToImage(Math.min(product.images.length - 1, currentIndex + 1))
+      }
+    },
+    [currentIndex, goToImage, product.images.length]
+  )
+
+  if (!hasMultipleImages) {
+    const primaryImage = product.images[0]
+    const hasImageError = imageErrors.includes(0)
+
+    const imageContent = hasImageError ? (
+      renderImageFallback(primaryImage.alt)
+    ) : (
+      <Image
+        fill
+        alt={primaryImage.alt}
+        className="object-cover transition-transform duration-200 motion-reduce:transition-none group-hover/card:scale-[1.02]"
+        onError={() => handleImageError(0)}
+        sizes={imageSizes}
+        src={primaryImage.src}
+      />
+    )
+
+    if (!product.href) {
+      return <div className={containerClasses}>{imageContent}</div>
+    }
+
+    return (
+      <a
+        className={cn(
+          containerClasses,
+          "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        )}
+        href={product.href}
+      >
+        {imageContent}
+      </a>
+    )
+  }
+
+  const slideList = (
+    <div aria-live="polite" className="relative h-full w-full">
+      {product.images.map((image, index) => {
+        const isActive = index === currentIndex
+        const hasImageError = imageErrors.includes(index)
+        const shouldLoadImage = loadedImageIndexes.includes(index)
+
+        return (
+          <div
+            aria-hidden={!isActive}
+            aria-label={`${index + 1} of ${product.images.length}`}
+            aria-roledescription="slide"
+            className={cn(
+              "absolute inset-0 transition-opacity duration-200 motion-reduce:transition-none",
+              isActive ? "opacity-100" : "pointer-events-none opacity-0"
+            )}
+            key={`${product.id}-${image.src}-${index}`}
+            role="group"
+          >
+            {hasImageError ? (
+              renderImageFallback(image.alt)
+            ) : !shouldLoadImage ? (
+              <div aria-hidden="true" className="h-full w-full bg-muted" />
+            ) : (
+              <Image
+                fill
+                alt={image.alt}
+                className="object-cover transition-transform duration-200 motion-reduce:transition-none group-hover/card:scale-[1.02]"
+                loading={index === 0 ? "eager" : "lazy"}
+                onError={() => handleImageError(index)}
+                sizes={imageSizes}
+                src={image.src}
+              />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+
+  const mediaContent = product.href ? (
+    <a
+      className="absolute inset-0 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      href={product.href}
+    >
+      {slideList}
+    </a>
+  ) : (
+    <div className="absolute inset-0">{slideList}</div>
+  )
+
+  return (
+    <div
+      aria-label={`${product.title} images`}
+      aria-roledescription="carousel"
+      className={cn(
+        containerClasses,
+        "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      )}
+      onKeyDown={handleCarouselKeyDown}
+      role="region"
+      tabIndex={0}
+    >
+      {mediaContent}
+
+      {showArrowControls ? (
+        <Button
+          aria-label="Previous image"
+          className="absolute top-1/2 left-3 z-10 -translate-y-1/2 cursor-pointer rounded-full border-white/20 bg-black/55 text-white shadow-sm backdrop-blur-sm hover:bg-black/65 hover:text-white active:not-aria-[haspopup]:-translate-y-1/2"
+          disabled={currentIndex === 0}
+          onClick={() => goToImage(Math.max(0, currentIndex - 1))}
+          size="icon-sm"
+          type="button"
+          variant="ghost"
+        >
+          <ChevronLeft aria-hidden="true" />
+        </Button>
+      ) : null}
+
+      {showDotControls ? (
+        <div className="absolute right-1/2 bottom-3 z-10 flex translate-x-1/2 items-center gap-1 rounded-full border border-white/20 bg-black/55 px-1.5 py-0.5 shadow-sm backdrop-blur-sm">
+          {product.images.map((image, index) => {
+            const isActive = index === currentIndex
+
+            return (
+              <button
+                aria-current={isActive ? "true" : undefined}
+                aria-label={`Go to image ${index + 1} of ${product.images.length}`}
+                className={cn(
+                  "flex size-3.5 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-white/10",
+                  "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                  isActive && "bg-white/10"
+                )}
+                key={`${image.src}-${index}`}
+                onClick={() => goToImage(index)}
+                type="button"
+              >
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "size-1.5 rounded-full bg-white/65 transition-colors",
+                    isActive ? "bg-white" : "bg-white/65"
+                  )}
+                />
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
+
+      {showArrowControls ? (
+        <Button
+          aria-label="Next image"
+          className="absolute top-1/2 right-3 z-10 -translate-y-1/2 cursor-pointer rounded-full border-white/20 bg-black/55 text-white shadow-sm backdrop-blur-sm hover:bg-black/65 hover:text-white active:not-aria-[haspopup]:-translate-y-1/2"
+          disabled={currentIndex === product.images.length - 1}
+          onClick={() =>
+            goToImage(Math.min(product.images.length - 1, currentIndex + 1))
+          }
+          size="icon-sm"
+          type="button"
+          variant="ghost"
+        >
+          <ChevronRight aria-hidden="true" />
+        </Button>
+      ) : null}
+    </div>
+  )
+}
+
+export function ProductCardTitle({
+  product,
+  layout,
+}: ProductCardTitleProps) {
+  const titleClasses = cn(
+    "font-semibold tracking-tight",
+    layout === "horizontal-detailed" ? "text-xl" : "line-clamp-2 text-lg"
+  )
+
+  if (!product.href) {
+    return <h3 className={titleClasses}>{product.title}</h3>
+  }
+
+  return (
+    <a
+      className={cn(
+        titleClasses,
+        "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      )}
+      href={product.href}
+    >
+      {product.title}
+    </a>
+  )
+}
+
+export function ProductCardPrice({ price }: ProductCardPriceProps) {
+  return (
+    <div className="flex items-end gap-2">
+      <span className="text-base font-semibold">{formatPrice(price)}</span>
+      {typeof price.compareAt === "number" ? (
+        <s
+          aria-label={`Original price ${formatPrice({
+            amount: price.compareAt,
+            currency: price.currency,
+          })}`}
+          className="text-sm text-muted-foreground"
+        >
+          {formatPrice({
+            amount: price.compareAt,
+            currency: price.currency,
+          })}
+        </s>
+      ) : null}
+    </div>
+  )
+}
+
+export function ProductCardBadge({ badge }: ProductCardBadgeProps) {
+  return (
+    <Badge
+      className="pointer-events-none absolute top-3 left-3"
+      variant={badge.variant ? badgeVariants[badge.variant] : "secondary"}
+    >
+      {badge.label}
+    </Badge>
+  )
+}
+
+export function ProductCardActions({
+  layout,
+  product,
+  showQuickView,
+  onPrimaryAction,
+  primaryActionLabel,
+  primaryActionHasPopup,
+  primaryActionExpanded,
+  onQuickView,
+}: ProductCardActionsProps) {
+  const actionButtons = showQuickView ? (
+    <Button
+      aria-label="Open quick view"
+      onClick={() => onQuickView?.(product.id)}
+      size="icon"
+      type="button"
+      variant="outline"
+    >
+      <Eye aria-hidden="true" />
+    </Button>
+  ) : null
+
+  const addToCartButton = (
+    <Button
+      aria-expanded={primaryActionHasPopup ? primaryActionExpanded : undefined}
+      aria-haspopup={primaryActionHasPopup}
+      className={layout === "vertical" ? undefined : "w-full sm:w-auto"}
+      onClick={onPrimaryAction}
+      type="button"
+    >
+      <ShoppingCart aria-hidden="true" />
+      {primaryActionLabel}
+    </Button>
+  )
+
+  if (layout === "vertical") {
+    return (
+      <div className="flex items-center gap-2">
+        {actionButtons}
+        {addToCartButton}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-2 sm:flex-row">
+      {actionButtons}
+      {addToCartButton}
+    </div>
+  )
+}
+
+function ProductCardBase({
+  product,
+  layout = "vertical",
+  variants = "none",
+  slideshowControls = "both",
+  showWishlist = false,
+  isWishlisted,
+  showRating = true,
+  showQuickView = false,
+  onAddToCart,
+  onWishlistToggle,
+  onQuickView,
+  className,
+}: ProductCardProps) {
+  const [overlayOpen, setOverlayOpen] = React.useState(false)
+  const hasOverlayVariants =
+    variants === "overlay" &&
+    Array.isArray(product.variants) &&
+    product.variants.length > 0
+
+  const handlePrimaryAction = React.useCallback(() => {
+    if (hasOverlayVariants) {
+      setOverlayOpen(true)
+      return
+    }
+
+    onAddToCart?.({ productId: product.id })
+  }, [hasOverlayVariants, onAddToCart, product.id])
+
+  return (
+    <ProductCardSlideshowControlsContext.Provider value={slideshowControls}>
+      <Card
+        className={cn(
+          "group/card relative h-full gap-0 overflow-hidden py-0",
+          layoutClasses[layout],
+          className
+        )}
+      >
+        <ProductCardImage layout={layout} product={product} />
+        <div
+          className={cn("flex flex-1 flex-col gap-4", contentLayoutClasses[layout])}
+        >
+          <div className="space-y-3">
+            {product.category ? (
+              <p className="text-sm text-muted-foreground">{product.category}</p>
+            ) : null}
+            <ProductCardTitle layout={layout} product={product} />
+            {showWishlist ? (
+              <Button
+                aria-label={
+                  isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+                }
+                aria-pressed={isWishlisted ?? false}
+                className={cn(
+                  "absolute top-3 right-3",
+                  isWishlisted && "bg-accent text-accent-foreground"
+                )}
+                onClick={() => onWishlistToggle?.(product.id)}
+                size="icon"
+                type="button"
+                variant="outline"
+              >
+                <Heart
+                  aria-hidden="true"
+                  className={isWishlisted ? "fill-current" : undefined}
+                />
+              </Button>
+            ) : null}
+            {showRating && product.rating ? (
+              <Stars count={product.rating.count} value={product.rating.value} />
+            ) : null}
+            {layout === "horizontal-detailed" && product.description ? (
+              <p className="line-clamp-3 text-sm text-muted-foreground">
+                {product.description}
+              </p>
+            ) : null}
+          </div>
+
+          {layout === "vertical" ? (
+            <div className="mt-auto flex items-center justify-between gap-3">
+              <ProductCardPrice price={product.price} />
+              <ProductCardActions
+                layout={layout}
+                onPrimaryAction={handlePrimaryAction}
+                onQuickView={onQuickView}
+                primaryActionExpanded={
+                  hasOverlayVariants ? overlayOpen : undefined
+                }
+                primaryActionHasPopup={hasOverlayVariants ? "dialog" : undefined}
+                primaryActionLabel={
+                  hasOverlayVariants ? "Quick Buy" : "Add to cart"
+                }
+                product={product}
+                showQuickView={showQuickView}
+              />
+            </div>
+          ) : (
+            <div className="mt-auto space-y-3">
+              <ProductCardPrice price={product.price} />
+              <ProductCardActions
+                layout={layout}
+                onPrimaryAction={handlePrimaryAction}
+                onQuickView={onQuickView}
+                primaryActionExpanded={
+                  hasOverlayVariants ? overlayOpen : undefined
+                }
+                primaryActionHasPopup={hasOverlayVariants ? "dialog" : undefined}
+                primaryActionLabel={
+                  hasOverlayVariants ? "Quick Buy" : "Add to cart"
+                }
+                product={product}
+                showQuickView={showQuickView}
+              />
+            </div>
+          )}
+        </div>
+
+        {product.badge ? <ProductCardBadge badge={product.badge} /> : null}
+        {hasOverlayVariants ? (
+          <QuickOptions
+            onAddToCart={(selectedVariants) => {
+              onAddToCart?.({
+                productId: product.id,
+                selectedVariants,
+              })
+              setOverlayOpen(false)
+            }}
+            onOpenChange={setOverlayOpen}
+            open={overlayOpen}
+            variants={product.variants ?? []}
+          />
+        ) : null}
+      </Card>
+    </ProductCardSlideshowControlsContext.Provider>
+  )
+}
+
+export const ProductCard = Object.assign(ProductCardBase, {
+  Image: ProductCardImage,
+  Title: ProductCardTitle,
+  Price: ProductCardPrice,
+  Badge: ProductCardBadge,
+  Actions: ProductCardActions,
+})
+```
+
+## registry/ui/quick-options.tsx
+
+```ts
+"use client"
+
+import * as React from "react"
+import { X } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Slider } from "@/components/ui/slider"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { cn } from "@/lib/utils"
+
+import type { ProductVariant, SelectedVariants } from "./types"
+
+const FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])",
+].join(", ")
+
+/**
+ * Props for the QuickOptions overlay.
+ */
+export type QuickOptionsProps = {
+  /** Variants to render. */
+  variants: ProductVariant[]
+  /** Controlled open state. */
+  open: boolean
+  /** Called when user clicks close button or presses Escape. */
+  onOpenChange: (open: boolean) => void
+  /** Called with the full selected variants map when user clicks Add to Cart. */
+  onAddToCart: (selected: SelectedVariants) => void
+  /** Optional label override for the Add to Cart button. Default: "Add to cart". */
+  addToCartLabel?: string
+  className?: string
+}
+
+function getFocusableElements(container: HTMLElement | null) {
+  if (!container) {
+    return []
+  }
+
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+  ).filter((element) => !element.hasAttribute("disabled"))
+}
+
+function getInitialSelectedVariants(
+  variants: ProductVariant[]
+): SelectedVariants {
+  return variants.reduce<SelectedVariants>((accumulator, variant) => {
+    if (variant.type === "slider" && variant.sliderConfig) {
+      accumulator[variant.id] = variant.sliderConfig.min
+    }
+
+    return accumulator
+  }, {})
+}
+
+function hasSelection(
+  variant: ProductVariant,
+  value: SelectedVariants[string] | undefined
+) {
+  if (typeof value === "undefined" || value === "") {
+    return false
+  }
+
+  if (variant.type === "checkbox") {
+    return Array.isArray(value) && value.length > 0
+  }
+
+  return true
+}
+
+export function QuickOptions({
+  variants,
+  open,
+  onOpenChange,
+  onAddToCart,
+  addToCartLabel = "Add to cart",
+  className,
+}: QuickOptionsProps) {
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const closeButtonRef = React.useRef<HTMLButtonElement>(null)
+  const previousFocusRef = React.useRef<HTMLElement | null>(null)
+  const wasOpenRef = React.useRef(open)
+  const [selected, setSelected] = React.useState<SelectedVariants>({})
+
+  const closeOverlay = React.useCallback(() => {
+    onOpenChange(false)
+  }, [onOpenChange])
+
+  React.useEffect(() => {
+    if (open) {
+      previousFocusRef.current =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null
+
+      setSelected(getInitialSelectedVariants(variants))
+
+      const frame = window.requestAnimationFrame(() => {
+        closeButtonRef.current?.focus()
+      })
+
+      wasOpenRef.current = true
+
+      return () => {
+        window.cancelAnimationFrame(frame)
+      }
+    }
+
+    if (wasOpenRef.current) {
+      setSelected({})
+      previousFocusRef.current?.focus()
+      previousFocusRef.current = null
+      wasOpenRef.current = false
+    }
+  }, [open, variants])
+
+  const handleKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === "Escape") {
+        event.preventDefault()
+        closeOverlay()
+        return
+      }
+
+      if (event.key !== "Tab") {
+        return
+      }
+
+      const focusableElements = getFocusableElements(containerRef.current)
+
+      if (focusableElements.length === 0) {
+        event.preventDefault()
+        return
+      }
+
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault()
+        lastElement.focus()
+      }
+
+      if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault()
+        firstElement.focus()
+      }
+    },
+    [closeOverlay]
+  )
+
+  const isAddToCartEnabled = React.useMemo(() => {
+    return variants
+      .filter((variant) => variant.required)
+      .every((variant) => hasSelection(variant, selected[variant.id]))
+  }, [selected, variants])
+
+  function renderVariantControl(variant: ProductVariant, labelId: string) {
+    if (variant.type === "swatch") {
+      const currentValue =
+        typeof selected[variant.id] === "string"
+          ? selected[variant.id]
+          : undefined
+
+      return (
+        <div className="flex flex-wrap gap-3">
+          {variant.options.map((option) => {
+            const isSelected = currentValue === option.value
+
+            return (
+              <button
+                aria-disabled={option.disabled ? "true" : undefined}
+                aria-label={`${variant.name}: ${option.label}`}
+                aria-pressed={isSelected}
+                className={cn(
+                  "size-8 rounded-full border border-border transition-shadow outline-none",
+                  "focus-visible:ring-3 focus-visible:ring-ring/50",
+                  isSelected ? "ring-2 ring-ring ring-offset-2" : undefined,
+                  option.disabled
+                    ? "cursor-not-allowed opacity-40"
+                    : "cursor-pointer"
+                )}
+                disabled={option.disabled}
+                key={option.value}
+                onClick={() => {
+                  setSelected((currentSelected) => ({
+                    ...currentSelected,
+                    [variant.id]: option.value,
+                  }))
+                }}
+                style={{
+                  backgroundColor: option.swatch ?? "transparent",
+                }}
+                type="button"
+              >
+                <span className="sr-only">{option.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      )
+    }
+
+    if (variant.type === "pills") {
+      const selectedValue = selected[variant.id]
+      const currentValue =
+        typeof selectedValue === "string" ? selectedValue : undefined
+
+      return (
+        <ToggleGroup
+          aria-label={variant.name}
+          className="w-full flex-wrap justify-start"
+          multiple={false}
+          onValueChange={(value) => {
+            setSelected((currentSelected) => ({
+              ...currentSelected,
+              [variant.id]: value[0] ?? "",
+            }))
+          }}
+          role="toolbar"
+          spacing={2}
+          value={currentValue ? [currentValue] : []}
+        >
+          {variant.options.map((option) => (
+            <ToggleGroupItem
+              className="rounded-full"
+              disabled={option.disabled}
+              key={option.value}
+              variant="outline"
+              value={option.value}
+            >
+              {option.label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      )
+    }
+
+    if (variant.type === "select") {
+      const selectedValue = selected[variant.id]
+      const currentValue =
+        typeof selectedValue === "string" ? selectedValue : null
+
+      return (
+        <Select
+          onValueChange={(value) => {
+            setSelected((currentSelected) => ({
+              ...currentSelected,
+              [variant.id]: value ?? "",
+            }))
+          }}
+          value={currentValue}
+        >
+          <SelectTrigger
+            aria-labelledby={labelId}
+            aria-label={variant.name}
+            className="w-full"
+          >
+            <SelectValue placeholder={`Choose ${variant.name.toLowerCase()}`} />
+          </SelectTrigger>
+          <SelectContent>
+            {variant.options.map((option) => (
+              <SelectItem
+                disabled={option.disabled}
+                key={option.value}
+                value={option.value}
+              >
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )
+    }
+
+    if (variant.type === "slider") {
+      if (!variant.sliderConfig) {
+        return (
+          <p className="text-xs text-muted-foreground">
+            Slider configuration is missing.
+          </p>
+        )
+      }
+
+      const selectedValue = selected[variant.id]
+      const currentValue =
+        typeof selectedValue === "number"
+          ? selectedValue
+          : variant.sliderConfig.min
+
+      return (
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            {currentValue}
+            {variant.sliderConfig.unit ? ` ${variant.sliderConfig.unit}` : ""}
+          </p>
+          <Slider
+            aria-labelledby={labelId}
+            aria-label={variant.name}
+            defaultValue={[variant.sliderConfig.min]}
+            max={variant.sliderConfig.max}
+            min={variant.sliderConfig.min}
+            onValueChange={(value) => {
+              const nextValue = Array.isArray(value) ? value[0] : value
+
+              setSelected((currentSelected) => ({
+                ...currentSelected,
+                [variant.id]: nextValue,
+              }))
+            }}
+            step={variant.sliderConfig.step}
+            value={[currentValue]}
+          />
+        </div>
+      )
+    }
+
+    if (variant.type === "checkbox") {
+      const selectedValue = selected[variant.id]
+      const currentValue = Array.isArray(selectedValue) ? selectedValue : []
+
+      return (
+        <div className="space-y-3">
+          {variant.options.map((option) => {
+            const isChecked = currentValue.includes(option.value)
+
+            return (
+              <label
+                className={cn(
+                  "flex items-center gap-3 text-sm",
+                  option.disabled
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer"
+                )}
+                key={option.value}
+              >
+                <Checkbox
+                  checked={isChecked}
+                  disabled={option.disabled}
+                  onCheckedChange={(nextChecked) => {
+                    setSelected((currentSelected) => {
+                      const rawValue = currentSelected[variant.id]
+                      const activeValue = Array.isArray(rawValue)
+                        ? rawValue.filter(
+                            (value): value is string =>
+                              typeof value === "string"
+                          )
+                        : []
+
+                      const nextValues = nextChecked
+                        ? [...activeValue, option.value]
+                        : activeValue.filter((value) => value !== option.value)
+
+                      return {
+                        ...currentSelected,
+                        [variant.id]: nextValues,
+                      }
+                    })
+                  }}
+                />
+                <span>{option.label}</span>
+              </label>
+            )
+          })}
+        </div>
+      )
+    }
+
+    if (variant.type === "radio") {
+      const selectedValue = selected[variant.id]
+      const currentValue =
+        typeof selectedValue === "string" ? selectedValue : ""
+
+      return (
+        <RadioGroup
+          className="gap-3"
+          onValueChange={(value) => {
+            setSelected((currentSelected) => ({
+              ...currentSelected,
+              [variant.id]: value,
+            }))
+          }}
+          value={currentValue}
+        >
+          {variant.options.map((option) => (
+            <label
+              className={cn(
+                "flex items-center gap-3 text-sm",
+                option.disabled
+                  ? "cursor-not-allowed opacity-50"
+                  : "cursor-pointer"
+              )}
+              key={option.value}
+            >
+              <RadioGroupItem disabled={option.disabled} value={option.value} />
+              <span>{option.label}</span>
+            </label>
+          ))}
+        </RadioGroup>
+      )
+    }
+
+    return (
+      <p className="text-xs text-muted-foreground">{variant.type} options</p>
+    )
+  }
+
+  if (!open) {
+    return null
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      aria-label="Quick options"
+      className={cn("absolute inset-0 z-20 flex flex-col bg-background", className)}
+      onKeyDown={handleKeyDown}
+      role="dialog"
+    >
+      <div className="flex items-center justify-between border-b px-4 py-3">
+        <div className="space-y-1">
+          <h2 className="text-base font-semibold tracking-tight">Options</h2>
+          <p className="text-sm text-muted-foreground">
+            Choose your product options before adding to cart.
+          </p>
+        </div>
+        <Button
+          aria-label="Close options"
+          onClick={closeOverlay}
+          ref={closeButtonRef}
+          size="icon"
+          type="button"
+          variant="ghost"
+        >
+          <X aria-hidden="true" />
+        </Button>
+      </div>
+
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
+        {variants.map((variant) => {
+          const labelId = `${variant.id}-label`
+
+          return (
+            <section className="space-y-2" key={variant.id}>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium" id={labelId}>
+                    {variant.name}
+                  </p>
+                  {variant.required ? (
+                    <span className="text-xs text-muted-foreground">
+                      Required
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+              {renderVariantControl(variant, labelId)}
+            </section>
+          )
+        })}
+      </div>
+
+      <div className="border-t px-4 py-4">
+        <Button
+          className="w-full"
+          disabled={!isAddToCartEnabled}
+          onClick={() => {
+            if (!isAddToCartEnabled) {
+              return
+            }
+
+            onAddToCart(selected)
+          }}
+          type="button"
+        >
+          {addToCartLabel}
+        </Button>
+      </div>
+    </div>
+  )
+}
+```
+
+## registry/ui/hotspot-image.tsx
+
+```ts
+"use client"
+
+import Image from "next/image"
+
+import { cn } from "@/lib/utils"
+
+import type { HotspotImageProps } from "./types"
+
+export function HotspotImage({
+  src,
+  alt,
+  width,
+  height,
+  children,
+  className,
+}: HotspotImageProps) {
+  return (
+    <div
+      aria-label={`Shoppable image: ${alt}`}
+      className={cn("relative w-full overflow-x-auto overflow-y-hidden", className)}
+      role="region"
+    >
+      <div className="relative inline-block" style={{ width: `${width}px` }}>
+        <Image
+          alt={alt}
+          className="block"
+          height={height}
+          priority={false}
+          sizes={`${width}px`}
+          src={src}
+          width={width}
+        />
+        {children}
+      </div>
+    </div>
+  )
+}
+```
+
+## registry/ui/hotspot-pin.tsx
+
+```ts
+"use client"
+
+import { Plus } from "lucide-react"
+
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+
+import type { HotspotPinProps } from "./types"
+
+const pinBaseClasses =
+  "absolute inline-flex items-center justify-center rounded-full shadow-sm transition-[background-color,box-shadow,filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none"
+
+const pinVariantClasses = {
+  plus:
+    "size-8 border-[3px] border-black/70 bg-background text-foreground hover:bg-accent dark:border-white/70",
+  dot: "size-5 rounded-full border-[3px] border-background/80 bg-primary text-primary-foreground",
+} satisfies Record<NonNullable<HotspotPinProps["variant"]>, string>
+
+export function HotspotPin(props: HotspotPinProps) {
+  const { x, y, variant = "plus", label, children, className } = props
+
+  return (
+    <Popover>
+      <PopoverTrigger
+        aria-label={label ?? `Hotspot at ${x}%, ${y}%`}
+        className={cn(
+          pinBaseClasses,
+          pinVariantClasses[variant],
+          className
+        )}
+        style={{
+          left: `${x}%`,
+          position: "absolute",
+          top: `${y}%`,
+          transform: "translate(-50%, -50%)",
+        }}
+        type="button"
+      >
+        {variant === "plus" ? <Plus aria-hidden="true" className="size-4" /> : null}
+      </PopoverTrigger>
+      <PopoverContent
+        align="center"
+        className="max-w-[90vw] w-auto p-0 has-[[data-slot=card]]:overflow-hidden has-[[data-slot=card]]:rounded-xl has-[[data-slot=card]]:bg-transparent"
+        side="top"
+      >
+        {children}
+      </PopoverContent>
+    </Popover>
+  )
+}
+```
+
+## registry/ui/hotspot-tooltip.tsx
+
+```ts
+import { cn } from "@/lib/utils"
+
+import type { HotspotTooltipProps } from "./types"
+
+export function HotspotTooltip({
+  title,
+  description,
+  className,
+}: HotspotTooltipProps) {
+  return (
+    <div className={cn("max-w-xs p-4", className)}>
+      <h3 className="mb-1 text-sm font-semibold">{title}</h3>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  )
+}
+```
+
+## registry/ui/hotspot-link.tsx
+
+```ts
+import { ArrowRight } from "lucide-react"
+
+import { cn } from "@/lib/utils"
+
+import type { HotspotLinkProps } from "./types"
+
+export function HotspotLink({
+  label,
+  href,
+  target,
+  className,
+}: HotspotLinkProps) {
+  return (
+    <a
+      className={cn(
+        "flex items-center gap-2 rounded-md px-4 py-3 transition-colors hover:bg-accent motion-reduce:transition-none",
+        className
+      )}
+      href={href}
+      rel={target === "_blank" ? "noopener noreferrer" : undefined}
+      target={target}
+    >
+      <span className="text-sm font-medium">{label}</span>
+      <ArrowRight aria-hidden="true" className="h-4 w-4" />
+    </a>
+  )
+}
+```

@@ -1,0 +1,194 @@
+# shoppablecn
+
+> E-commerce UI primitives for shadcn/ui. Product cards, shoppable hotspot images, and quick-buy overlays. Install via the shadcn CLI — you own the code.
+
+## Installation
+
+Install individual components via the shadcn CLI:
+
+```bash
+npx shadcn@latest add https://shoppablecn.dev/r/product-card.json
+npx shadcn@latest add https://shoppablecn.dev/r/quick-options.json
+npx shadcn@latest add https://shoppablecn.dev/r/hotspot-image.json
+```
+
+Each command installs the component source, its shared dependencies (`types.ts`, `utils.ts`), and any required shadcn primitives automatically.
+
+## Components
+
+### ProductCard
+
+Flexible e-commerce product card with three layouts and two variant modes.
+
+Install: `npx shadcn@latest add https://shoppablecn.dev/r/product-card.json`
+
+Also installs: `quick-options.tsx` (used internally for overlay mode), `types.ts`, `utils.ts`
+
+Docs: https://docs.shoppablecn.dev/docs/product-card
+
+### QuickOptions
+
+Slide-up overlay for variant selection. Supports 6 option types: swatch, pills, select, slider, checkbox, radio.
+
+Install: `npx shadcn@latest add https://shoppablecn.dev/r/quick-options.json`
+
+Also installs: `types.ts`, `utils.ts`
+
+Docs: https://docs.shoppablecn.dev/docs/quick-options
+
+### HotspotImage
+
+Image container with percentage-positioned hotspot pins. Each pin opens a Radix Popover with custom content — a ProductCard, HotspotTooltip, HotspotLink, or any JSX.
+
+Install: `npx shadcn@latest add https://shoppablecn.dev/r/hotspot-image.json`
+
+Also installs: `hotspot-pin.tsx`, `hotspot-tooltip.tsx`, `hotspot-link.tsx`, `types.ts`, `utils.ts`
+
+Docs: https://docs.shoppablecn.dev/docs/hotspot-image
+
+## TypeScript Types
+
+All public types are in `types.ts`. Key types:
+
+```ts
+type Currency = "EUR" | "USD" | "GBP" | "SEK"
+
+type Price = {
+  amount: number      // in minor units (cents) — e.g. 4900 = €49.00
+  currency: Currency
+  compareAt?: number  // optional strikethrough price, also in minor units
+}
+
+type ProductImage = {
+  src: string
+  alt: string
+}
+
+type Product = {
+  id: string
+  title: string
+  description?: string
+  category?: string
+  images: ProductImage[]  // must have at least one entry; first is default
+  price: Price
+  rating?: { value: number; count: number }  // value: 0–5
+  badge?: { label: string; variant?: "default" | "sale" | "new" }
+  href?: string
+  variants?: ProductVariant[]
+}
+
+type VariantOption = {
+  label: string
+  value: string
+  swatch?: string    // CSS color value, used when type="swatch"
+  disabled?: boolean
+}
+
+type ProductVariant = {
+  id: string
+  name: string
+  type: "swatch" | "pills" | "select" | "slider" | "checkbox" | "radio"
+  required?: boolean
+  options: VariantOption[]
+  sliderConfig?: { min: number; max: number; step: number; unit?: string }
+}
+
+type SelectedVariants = Record<string, string | string[] | number>
+
+type ProductCardLayout = "vertical" | "horizontal" | "horizontal-detailed"
+type ProductCardVariantsMode = "none" | "overlay"
+
+type ProductCardProps = {
+  product: Product
+  layout?: ProductCardLayout          // default: "vertical"
+  variants?: ProductCardVariantsMode  // default: "none"
+  slideshowControls?: "arrows" | "dots" | "both" | "none"  // default: "both"
+  showWishlist?: boolean
+  isWishlisted?: boolean
+  showRating?: boolean
+  showQuickView?: boolean
+  onAddToCart?: (args: { productId: string; selectedVariants?: SelectedVariants }) => void
+  onWishlistToggle?: (productId: string) => void
+  onQuickView?: (productId: string) => void
+  className?: string
+}
+
+type HotspotImageProps = {
+  src: string
+  alt: string
+  width: number   // natural width in pixels
+  height: number  // natural height in pixels
+  children: React.ReactNode  // HotspotPin components
+  className?: string
+}
+
+type HotspotPinProps = {
+  x: number        // horizontal position as % of image width (0–100)
+  y: number        // vertical position as % of image height (0–100)
+  variant?: "plus" | "dot"  // default: "plus"
+  label?: string   // aria-label for the pin button
+  children: React.ReactNode  // popover content
+  className?: string
+}
+
+type HotspotTooltipProps = {
+  title: string
+  description: string
+  className?: string
+}
+
+type HotspotLinkProps = {
+  label: string
+  href: string
+  target?: React.HTMLAttributeAnchorTarget
+  className?: string
+}
+```
+
+## Key Constraints
+
+- **Prices are in minor units (cents).** `amount: 4900` with `currency: "EUR"` renders as €49.00. Never pass decimal amounts.
+- **`currency` is a union, not a free string.** Valid values: `"EUR" | "USD" | "GBP" | "SEK"`.
+- **`images` must have at least one entry.** The first image is always the default displayed image.
+- **`variants="overlay"` requires `product.variants` to have entries.** If `product.variants` is empty or undefined, it falls back to a regular Add to Cart button.
+
+## Composition Patterns
+
+### ProductCard inside HotspotPin
+
+HotspotPin accepts any JSX as children. ProductCard renders correctly inside a pin's popover:
+
+```tsx
+<HotspotImage src="/scene.jpg" width={1920} height={1080} alt="Living room">
+  <HotspotPin x={35} y={60} label="View sofa">
+    <ProductCard product={sofa} layout="vertical" variants="none" />
+  </HotspotPin>
+</HotspotImage>
+```
+
+### HotspotPin content types
+
+Three preset content components ship with HotspotImage:
+
+```tsx
+// Informational tooltip
+<HotspotPin x={20} y={40} label="Wall art details">
+  <HotspotTooltip title="Framed Canvas" description="Hand-painted, 60×80cm." />
+</HotspotPin>
+
+// Simple link
+<HotspotPin x={70} y={30} label="Shop collection">
+  <HotspotLink label="View collection" href="/collections/art" />
+</HotspotPin>
+
+// Any custom JSX also works
+<HotspotPin x={50} y={50} label="Custom content">
+  <div className="p-4">
+    <p>Any content here</p>
+  </div>
+</HotspotPin>
+```
+
+## Full Source
+
+For complete component source, see: https://shoppablecn.dev/llms-full.txt

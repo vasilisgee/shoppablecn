@@ -22,6 +22,7 @@ A set of ecommerce UI components built with [shadcn/ui](https://ui.shadcn.com) f
 - ♿ Accessibility-ready  
 - 🎨 Easy to customize with Tailwind CSS  
 - 🛒 Focused on real ecommerce interactions  
+- 🤖 AI-ready for fast implementations
 
 ## Tech Stack
 
